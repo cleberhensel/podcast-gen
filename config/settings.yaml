@@ -1,0 +1,126 @@
+# Configurações do Gerador de Podcast TTS
+# Arquivo: config/settings.yaml
+
+# Configurações de Áudio
+audio:
+  format: "wav"              # Formato de saída: wav, mp3, aiff
+  sample_rate: 22050         # Taxa de amostragem (Hz)
+  channels: 1                # Canais: 1 (mono), 2 (estéreo)
+  bit_depth: 16              # Profundidade de bits: 16, 24, 32
+
+# Configurações de Processamento
+processing:
+  normalize_volume: true     # Normalizar volume entre segmentos
+  apply_compression: true    # Aplicar compressão dinâmica
+  fade_duration: 0.2         # Duração do fade entre segmentos (segundos)
+  inter_segment_pause: 0.8   # Pausa entre segmentos (segundos)
+  remove_silence: true       # Remover silêncios longos
+  
+# Configurações de Engines TTS
+engines:
+  default: "coqui"           # Engine padrão: coqui, piper, macos
+  
+  coqui:
+    enabled: true
+    model_name: "tts_models/multilingual/multi-dataset/xtts_v2"
+    language: "pt"           # Português brasileiro
+    quality: "excellent"     # Qualidade: high, very_high, excellent
+    device: "cpu"            # Device: cpu, cuda (CPU para compatibilidade Docker)
+    cache_dir: "/home/podcast/.cache/tts"
+    voice_cloning: true      # Habilitar clonagem de voz
+    multilingual: true       # Suporte multilingual
+    neural: true             # Engine neural avançado
+    fallback_to_piper: true  # Fallback para Piper se falhar
+    
+    # Configurações de qualidade XTTS
+    temperature: 0.7         # Criatividade vs estabilidade (0.1-1.0)
+    length_penalty: 1.0      # Penalidade de comprimento
+    repetition_penalty: 2.0  # Penalidade de repetição
+    top_k: 50               # Top-k sampling
+    top_p: 0.85             # Top-p sampling
+    split_sentences: true    # Dividir sentenças para melhor qualidade
+  
+  macos:
+    enabled: true
+    default_rate: 200        # Palavras por minuto
+    quality: "high"          # Qualidade: low, medium, high
+    
+  piper:
+    enabled: true
+    models_path: "~/.local/share/piper-tts"  # Caminho para modelos
+    quality: "medium"        # Qualidade: low, medium, high
+    speed: 1.0              # Velocidade (0.5-2.0)
+    neural: true            # Engine neural
+    fallback_to_macos: true # Fallback para macOS se falhar
+    
+  google:
+    enabled: false           # Requer chave API
+    api_key: ""              # Chave da API Google Cloud TTS
+    quality: "standard"      # Qualidade: standard, premium
+
+# Limitações e Validações
+limits:
+  max_segment_length: 60     # Duração máxima de segmento (segundos)
+  max_total_duration: 900    # Duração máxima total (segundos) - 15 minutos
+  max_characters: 8          # Número máximo de personagens
+  max_text_length: 500       # Máximo de caracteres por segmento
+  
+# Configurações de Diversidade de Vozes
+voice_diversity:
+  enforce_gender_alternation: true   # Forçar alternância de gênero
+  min_voice_difference: 2            # Diferença mínima entre vozes
+  prefer_different_styles: true      # Preferir estilos diferentes
+  avoid_similar_pitch: true          # Evitar tons similares
+
+# Configurações de Saída
+output:
+  default_directory: "output/final"  # Diretório padrão para podcasts
+  segments_directory: "output/segments"  # Diretório para segmentos
+  temp_directory: "output/temp"      # Diretório temporário
+  keep_segments: true                # Manter segmentos após combinação
+  auto_cleanup: false                # Limpeza automática de arquivos temp
+  
+# Configurações de Log
+logging:
+  level: "INFO"              # Nível: DEBUG, INFO, WARNING, ERROR
+  file: "podcast_generator.log"
+  max_file_size: "10MB"
+  backup_count: 3
+
+# Configurações de Performance
+performance:
+  parallel_synthesis: true   # Síntese paralela de segmentos
+  max_workers: 4             # Número máximo de workers paralelos
+  cache_enabled: true        # Cache de vozes e configurações
+  cache_size: 100            # Tamanho do cache (MB)
+
+# Configurações de Idioma
+language:
+  default: "pt-BR"           # Idioma padrão
+  fallback: "en-US"          # Idioma de fallback
+  auto_detect: false         # Detecção automática de idioma
+
+# Configurações de Templates
+templates:
+  default_metadata:
+    author: "Podcast Generator TTS"
+    category: "Technology"
+    language: "pt-BR"
+    
+# Configurações de Pós-processamento
+post_processing:
+  background_music:
+    enabled: false
+    default_volume: 0.1      # Volume da música de fundo (0.0-1.0)
+    fade_in: 2.0             # Fade in da música (segundos)
+    fade_out: 2.0            # Fade out da música (segundos)
+    
+  intro_outro:
+    enabled: false
+    intro_file: ""           # Arquivo de introdução
+    outro_file: ""           # Arquivo de encerramento
+    
+  effects:
+    reverb: false            # Adicionar reverb
+    echo: false              # Adicionar eco
+    eq_preset: "speech"      # Preset de equalização: speech, music, podcast 

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  podcast-generator:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - podcast_output:/app/output
+      - ./config:/app/config:ro
+    environment:
+      - NODE_ENV=production
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  podcast_output:
+    driver: local 
