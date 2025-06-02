@@ -1,351 +1,428 @@
-# 🎙️ Podcast Generator TTS - Sistema Avançado de Geração de Podcasts
+# 🎙️ Podcast Generator TTS - Sistema Dockerizado para Geração de Podcasts
 
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://www.docker.com/)
-[![Python](https://img.shields.io/badge/Python-3.10+-green?logo=python)](https://python.org)
-[![Node.js](https://img.shields.io/badge/Node.js-12+-brightgreen?logo=node.js)](https://nodejs.org)
-[![TTS](https://img.shields.io/badge/TTS-Piper-purple)](https://github.com/rhasspy/piper)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Piper TTS](https://img.shields.io/badge/TTS-Piper-9146FF)](https://github.com/rhasspy/piper)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Sistema profissional para geração automatizada de podcasts usando **Piper TTS** como engine principal e **macOS TTS** como fallback. Interface web moderna com upload de roteiros e download automático de MP3s.
+> **Sistema profissional e dockerizado para geração automatizada de podcasts usando Piper TTS e interface web moderna. Deploy em segundos em qualquer computador!**
 
-## ✨ **Características Principais**
+## 🌟 **Por que este projeto?**
 
-### 🎯 **Engines TTS**
-- **🥇 Piper TTS** - Engine neural rápido e eficiente (ONNX)
-- **🥈 macOS TTS** - Backup nativo confiável
+Este sistema foi desenvolvido para democratizar a criação de podcasts de alta qualidade, oferecendo:
 
-### 🚀 **Recursos Avançados**
-- ✅ **Vozes Masculinas e Femininas** diferenciadas
-- ✅ **Interface Web Moderna** com drag & drop
-- ✅ **Processamento em Background** com status em tempo real
-- ✅ **Fallback Automático** entre engines
-- ✅ **Configuração Flexível** via YAML
-- ✅ **Docker Ready** - Deploy em segundos
-- ✅ **Download Automático** de modelos TTS
-- ✅ **Suporte Multilingual** (PT-BR, EN, ES, FR, DE)
+- **✅ Deploy Instantâneo**: Execute em qualquer máquina com Docker em menos de 2 minutos
+- **✅ Vozes Naturais**: Piper TTS com modelos neurais otimizados para português brasileiro  
+- **✅ Interface Moderna**: Web UI responsiva com drag & drop de arquivos
+- **✅ Processamento Robusto**: Pipeline completo de áudio com normalização e otimização
+- **✅ Zero Configuração**: Baixa modelos automaticamente, funciona out-of-the-box
 
-### 🎵 **Qualidades de Áudio**
-- **Sample Rate**: 22kHz (Piper TTS)
-- **Formato**: WAV + MP3 (192kbps)
-- **Processamento**: FFmpeg para otimização
-- **Vozes**: Diferenciação automática por personagem
+## 🚀 **Quick Start - Docker**
 
-## 🛠️ **Tecnologias Utilizadas**
+### **Pré-requisitos**
+- **Docker** ou **Podman** instalado
+- **4GB RAM** disponível (recomendado)
+- **3GB espaço livre** (para modelos e cache)
 
-### Backend
-- **Python 3.10+** - Core engine
-- **Piper TTS** - Fast neural synthesis (ONNX)
-- **FFmpeg** - Audio processing
-- **PyYAML** - Configuration management
-
-### Frontend & API
-- **Node.js + Express.js** - Web server
-- **Bootstrap 5** - Modern UI
-- **HTML5 File API** - Drag & drop uploads
-- **JavaScript ES6+** - Dynamic interface
-
-### Infrastructure
-- **Docker** - Containerization
-- **Ubuntu 22.04** - Base image
-- **Podman/Docker** - Container runtime
-
-## 🚀 **Quick Start**
-
-### Pré-requisitos
-- **Docker** ou **Podman**
-- **2GB+ RAM** (recomendado 4GB)
-- **2GB+ espaço livre** para modelos
-
-### 1️⃣ **Clone e Build**
+### **1️⃣ Clone e Execute**
 ```bash
+# Clone o repositório
 git clone <repository-url>
 cd podcast-docker
 
-# Build da imagem (10-15 min na primeira vez)
-podman build -t podcast-generator .
+# Build e execute com Docker Compose (recomendado)
+docker-compose up --build -d
+
+# OU execute manualmente
+docker build -t podcast-generator .
+docker run -d --name podcast-generator -p 3000:3000 podcast-generator
 ```
 
-### 2️⃣ **Executar Container**
-```bash
-# Rodar em background
-podman run -d --name podcast-generator -p 3000:3000 podcast-generator
-
-# Verificar status
-podman logs podcast-generator
+### **2️⃣ Acesse a Interface**
+```
+🌐 http://localhost:3000
 ```
 
-### 3️⃣ **Acessar Interface**
-```
-🌐 Interface Web: http://localhost:3000
-```
+### **3️⃣ Gere seu Primeiro Podcast**
+1. Faça upload de um arquivo `.txt` com o roteiro
+2. Aguarde o processamento (2-5 minutos)
+3. Baixe o MP3 gerado automaticamente
+
+**É isso! Seu podcast está pronto! 🎉**
 
 ## 📝 **Formato do Roteiro**
 
-Crie arquivos `.txt` com o seguinte formato:
+O sistema aceita arquivos `.txt` com formato simples e intuitivo:
 
 ```text
 # Título do Podcast
-Meu Podcast Sobre Tecnologia
+Game Dev Masters - Aula 2: Geometrias Primitivas
 
-# Personagens e diálogos
-HOST_MALE: Olá pessoal! Bem-vindos ao nosso podcast de tecnologia.
+[HOST_MALE]: Olá pessoal! Aqui é o Paulo, bem-vindos ao Game Dev Masters!
 
-HOST_FEMALE: Oi! Hoje vamos falar sobre inteligência artificial e suas aplicações.
+[HOST_FEMALE]: Oi Paulo! Ana aqui, e hoje vamos falar sobre geometrias primitivas do Three.js!
 
-HOST_MALE: Isso mesmo! A IA está revolucionando várias áreas...
+[HOST_MALE]: Perfeita escolha! Essas formas básicas são fundamentais para qualquer desenvolvedor.
 
-HOST_FEMALE: Vamos começar falando sobre machine learning.
+[HOST_FEMALE]: Exato! Vamos começar com BoxGeometry e suas aplicações práticas.
 ```
 
-### 🎭 **Personagens Suportados**
-- `HOST_MALE` / `HOST_FEMALE` - Apresentadores
-- `EXPERT_MALE` / `EXPERT_FEMALE` - Especialistas  
-- `GUEST_MALE` / `GUEST_FEMALE` - Convidados
-- `NARRATOR_MALE` / `NARRATOR_FEMALE` - Narradores
+### **🎭 Personagens Suportados**
+- `[HOST_MALE]` / `[HOST_FEMALE]` - Apresentadores principais
+- `[EXPERT_MALE]` / `[EXPERT_FEMALE]` - Especialistas técnicos  
+- `[GUEST_MALE]` / `[GUEST_FEMALE]` - Convidados especiais
+- `[NARRATOR_MALE]` / `[NARRATOR_FEMALE]` - Narradores
+
+### **🎵 Vozes Brasileiras Incluídas**
+- **Masculina**: `pt_BR-faber-medium` (voz natural e clara)
+- **Feminina**: `pt_BR-lessac-medium` (voz expressiva e calorosa)
+
+*Modelos baixados automaticamente do Hugging Face na primeira execução*
+
+## 🏗️ **Arquitetura do Sistema**
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Interface     │───▶│   Node.js API    │───▶│  Python Core    │
+│   Web (React)   │    │   (Express.js)   │    │  (Piper TTS)    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                               │                         │
+                               ▼                         ▼
+                       ┌──────────────┐         ┌──────────────┐
+                       │   Uploads    │         │   FFmpeg     │
+                       │   & Status   │         │ Processador  │
+                       └──────────────┘         └──────────────┘
+                               │                         │
+                               ▼                         ▼
+                       ┌─────────────────────────────────────┐
+                       │        Volume Persistente           │
+                       │  /app/output (podcasts gerados)    │
+                       └─────────────────────────────────────┘
+```
+
+### **🔧 Componentes Principais**
+
+#### **Backend Python (`src/`)**
+- **`core/`**: Lógica central de geração de podcasts
+- **`engines/`**: Engines TTS (Piper, fallbacks) 
+- **`models/`**: Modelos de dados e parsing
+
+#### **Frontend Node.js**
+- **`server.js`**: API REST para upload e processamento
+- **`static/`**: Interface web moderna com Bootstrap 5
+- **`templates/`**: Templates HTML responsivos
+
+#### **Configuração (`config/`)**
+- **`settings.yaml`**: Configuração completa do sistema
+- Suporte a múltiplos engines, qualidades e idiomas
+
+#### **Docker & Deploy**
+- **`Dockerfile`**: Imagem otimizada Ubuntu 22.04
+- **`docker-compose.yml`**: Orquestração completa
+- **`.dockerignore`**: Build otimizado
 
 ## ⚙️ **Configuração Avançada**
 
-### 📁 **Estrutura de Arquivos**
-```
-podcast-docker/
-├── src/                    # Código Python
-│   ├── engines/           # Engines TTS
-│   │   ├── piper_tts.py  # Piper TTS engine
-│   │   └── macos_tts.py  # macOS TTS engine
-│   ├── core/             # Core logic
-│   └── models/           # Data models
-├── config/
-│   └── settings.yaml     # Configurações principais
-├── static/               # Frontend assets
-├── templates/            # HTML templates
-├── scripts/              # Roteiros exemplo
-└── output/               # Arquivos gerados
-```
-
-### 🔧 **settings.yaml**
-```yaml
-engines:
-  default: "piper"        # Engine padrão
-  
-  piper:
-    enabled: true
-    quality: "medium"
-    speed: 1.0
-    
-  macos:
-    enabled: true
-    default_rate: 200
-```
-
-## 🎙️ **Engines TTS Detalhadas**
-
-### 🥇 **Piper TTS** *(Recomendado)*
-- **Qualidade**: ⭐⭐⭐⭐ Muito Boa  
-- **Velocidade**: ⭐⭐⭐⭐⭐ Muito Rápida (~5s/min)
-- **Recursos**: Neural ONNX, modelos otimizados
-- **Uso**: Produção profissional
-
-**Configurações:**
-```yaml
-piper:
-  enabled: true
-  models_path: "~/.local/share/piper-tts"
-  quality: "medium"        # low, medium, high
-  speed: 1.0              # 0.5-2.0
-  neural: true
-  fallback_to_macos: true
-```
-
-### 🥈 **macOS TTS**
-- **Qualidade**: ⭐⭐⭐ Boa
-- **Velocidade**: ⭐⭐⭐⭐⭐ Instantânea
-- **Recursos**: Nativo, confiável
-- **Uso**: Fallback, desenvolvimento
-
-## 🔄 **Sistema de Fallback**
-
-O sistema tenta engines nesta ordem:
-1. **Piper TTS** (preferido)
-2. **macOS TTS** (fallback)
-
-Se um engine falha, o próximo é usado automaticamente.
-
-## 🐳 **Docker Detalhado**
-
-### **Dockerfile Highlights**
-```dockerfile
-FROM ubuntu:22.04
-
-# Instalar dependências
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip nodejs npm ffmpeg \
-    espeak espeak-data libespeak-dev
-
-# Instalar Piper TTS
-RUN pip3 install --upgrade pip setuptools wheel
-RUN pip3 install piper-tts
-```
-
-### **Volumes e Networking**
+### **Mapeamento de Volumes**
 ```bash
-# Mapeamento de volumes
-podman run -d \
+# Persistir outputs e configurações
+docker run -d \
   --name podcast-generator \
   -p 3000:3000 \
   -v $(pwd)/output:/app/output \
+  -v $(pwd)/config:/app/config \
   -v $(pwd)/scripts:/app/scripts \
   podcast-generator
 ```
 
-## 🔧 **Desenvolvimento**
+### **Configuração de Performance (`config/settings.yaml`)**
+```yaml
+# Otimizações para diferentes cenários
+performance:
+  parallel_synthesis: true     # Síntese paralela
+  max_workers: 4              # CPU cores a usar
+  cache_enabled: true         # Cache de modelos
+  cache_size: 100             # MB de cache
 
-### **Setup Local**
+# Qualidade vs Velocidade
+engines:
+  piper:
+    quality: "medium"         # low, medium, high
+    speed: 1.0               # 0.5-2.0
+    neural: true             # Engine neural
+    
+audio:
+  sample_rate: 22050         # Piper TTS otimizado
+  normalize_volume: true     # Normalização automática
+  apply_compression: true    # Compressão dinâmica
+```
+
+### **Configuração de Recursos**
+```yaml
+# Limites e validações
+limits:
+  max_segment_length: 60     # segundos por segmento
+  max_total_duration: 900    # 15 minutos máximo
+  max_characters: 8          # personagens simultâneos
+  max_text_length: 500       # caracteres por fala
+```
+
+## 🐳 **Docker em Detalhes**
+
+### **Build Otimizado**
+O `Dockerfile` foi otimizado para:
+- **Download automático** de modelos Piper TTS
+- **Instalação mínima** de dependências do sistema
+- **Usuário não-root** para segurança
+- **Cache de layers** para builds rápidos
+- **Healthcheck** integrado
+
+### **Multi-stage Build**
+```dockerfile
+# Sistema base otimizado
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Dependências sistema (camada cacheable)
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip nodejs npm ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Modelos TTS (download automático)
+RUN curl -L -o pt_BR-faber-medium.onnx \
+    "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/..."
+```
+
+### **Docker Compose para Produção**
+```yaml
+version: '3.8'
+services:
+  podcast-generator:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - podcast_output:/app/output
+      - ./config:/app/config:ro
+    environment:
+      - NODE_ENV=production
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+```
+
+## 💻 **Desenvolvimento Local**
+
+### **Sem Docker (desenvolvimento)**
 ```bash
-# Instalar dependências Python
+# Backend Python
 pip install -r requirements.txt
-
-# Instalar dependências Node.js  
-npm install
-
-# Rodar servidor de desenvolvimento
 python podcast_generator.py scripts/exemplo.txt
 
-# Rodar interface web
-node server.js
+# Frontend Node.js
+npm install
+npm start
 ```
 
-### **Estrutura de Código**
-- `src/engines/` - Implementações de engines TTS
-- `src/core/` - Lógica principal do gerador
-- `src/models/` - Modelos de dados
-- `config/` - Configurações YAML
-- `static/` - Assets web
-- `templates/` - Templates HTML
-
-## 🧪 **Testes**
-
-### **Teste Rápido**
+### **Com Docker (produção)**
 ```bash
-# Gerar podcast de teste
-python podcast_generator.py scripts/teste.txt --output-dir output/test
+# Build local
+docker build -t podcast-local .
 
-# Verificar engines disponíveis
-python -c "from src.engines.engine_factory import tts_factory; print(tts_factory.get_available_engines())"
+# Desenvolvimento com volume mounting
+docker run -it --rm \
+  -p 3000:3000 \
+  -v $(pwd):/app \
+  podcast-local npm run dev
 ```
 
-### **Teste de Performance**
+## 📊 **Monitoramento e Logs**
+
+### **Logs em Tempo Real**
 ```bash
-# Benchmark de velocidade
-time python podcast_generator.py scripts/benchmark.txt
+# Docker logs
+docker logs -f podcast-generator
+
+# Docker Compose logs
+docker-compose logs -f podcast-generator
 ```
 
-## 🚨 **Troubleshooting**
+### **Health Check**
+```bash
+# Verificar status
+curl http://localhost:3000/health
+
+# Resposta esperada
+{"status":"ok","engine":"piper","models":"loaded"}
+```
+
+### **Métricas de Performance**
+- **Tempo médio**: 30-60 segundos por minuto de áudio
+- **Uso de RAM**: 1-2GB durante processamento
+- **Uso de CPU**: 50-80% (cores definidos em `max_workers`)
+- **Espaço**: ~100MB por podcast de 10 minutos
+
+## 🔧 **Troubleshooting**
 
 ### **Problemas Comuns**
 
-#### ❌ "Piper TTS não disponível"
+#### **Container não inicia**
 ```bash
-# Instalar Piper TTS
-pip install piper-tts
+# Verificar logs
+docker logs podcast-generator
 
-# Verificar instalação
-python -c "import piper; print('Piper OK')"
+# Problemas de permissão
+docker exec -it podcast-generator chown -R podcast:podcast /app
 ```
 
-#### ❌ "Modelos não encontrados"
+#### **Modelos não baixam**
 ```bash
-# Criar diretório de modelos
-mkdir -p ~/.local/share/piper-tts
-
-# Download manual de modelos
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/lessac/medium/pt_BR-lessac-medium.onnx
+# Download manual
+docker exec -it podcast-generator bash
+cd /home/podcast/.local/share/piper-tts
+curl -L -o pt_BR-faber-medium.onnx "https://huggingface.co/..."
 ```
 
-#### ❌ "FFmpeg não encontrado"
+#### **Interface não carrega**
 ```bash
-# Ubuntu/Debian
-sudo apt-get install ffmpeg
+# Verificar porta
+netstat -tlnp | grep 3000
 
-# macOS
-brew install ffmpeg
-
-# Container
-apt-get update && apt-get install -y ffmpeg
+# Verificar firewall
+ufw allow 3000
 ```
 
-#### ❌ "Porta 3000 em uso"
-```bash
-# Usar porta diferente
-podman run -p 8080:3000 podcast-generator
-
-# Ou parar processo usando porta 3000
-lsof -ti:3000 | xargs kill -9
+#### **Processamento lento**
+```yaml
+# Otimizar settings.yaml
+performance:
+  max_workers: 2          # Reduzir para máquinas fracas
+  parallel_synthesis: false  # Processar sequencial
 ```
 
-## 📊 **Performance**
+### **Logs de Debug**
+```yaml
+# config/settings.yaml
+logging:
+  level: "DEBUG"
+  file: "podcast_generator.log"
+```
 
-### **Benchmarks Típicos**
-- **Piper TTS**: ~5-10s por minuto de áudio
-- **macOS TTS**: ~1-2s por minuto de áudio
-- **Conversão MP3**: ~2-3s independente do tamanho
+## 🚀 **Deploy em Produção**
 
-### **Requisitos de Sistema**
-- **CPU**: 2+ cores (4+ recomendado)
-- **RAM**: 2GB+ (4GB recomendado)
-- **Disco**: 2GB+ livre para modelos
-- **Rede**: Para download inicial de modelos
+### **Docker Swarm**
+```bash
+docker stack deploy -c docker-compose.yml podcast-stack
+```
 
-### **Otimizações**
-- Use `quality: "medium"` para melhor balanço velocidade/qualidade
-- Síntese paralela habilitada por padrão
-- Cache de modelos automático
-- Processamento de áudio otimizado com FFmpeg
+### **Kubernetes**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: podcast-generator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: podcast-generator
+  template:
+    metadata:
+      labels:
+        app: podcast-generator
+    spec:
+      containers:
+      - name: podcast-generator
+        image: podcast-generator:latest
+        ports:
+        - containerPort: 3000
+```
 
-## 📈 **Roadmap**
+### **Reverse Proxy (Nginx)**
+```nginx
+server {
+    listen 80;
+    server_name podcast.exemplo.com;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
 
-### **v2.0** *(Em desenvolvimento)*
-- ✅ Migração para Piper TTS como principal
-- ✅ Remoção de dependências pesadas (PyTorch)
-- ✅ Melhoria de performance
-- 🔄 Interface web aprimorada
-- 🔄 API REST completa
-- 🔄 Suporte a múltiplos idiomas
+## 📋 **Requisitos de Sistema**
 
-### **v2.1** *(Planejado)*
-- 📋 Processamento em lote
-- 📋 Templates de podcast
-- 📋 Integração com serviços de hosting
-- 📋 Métricas e analytics
+### **Mínimo**
+- **CPU**: 2 cores (x86_64 ou ARM64)
+- **RAM**: 2GB disponível
+- **Disco**: 3GB livres
+- **OS**: Linux, macOS, Windows (com Docker)
 
-## 📜 **Changelog**
+### **Recomendado**
+- **CPU**: 4+ cores (melhor performance paralela)
+- **RAM**: 4GB+ (processamento simultâneo)
+- **Disco**: 5GB+ (cache e modelos)
+- **SSD**: Preferível para I/O rápido
 
-### **v1.8.0** *(Atual)*
-- ✅ Removido Coqui TTS (dependências pesadas)
-- ✅ Piper TTS como engine principal
-- ✅ Redução significativa de tamanho da imagem Docker
-- ✅ Melhoria de performance geral
-- ✅ Interface web otimizada
+### **Compatibilidade**
+- ✅ **Linux**: Ubuntu 20.04+, Debian 11+, CentOS 8+
+- ✅ **macOS**: 10.15+ (Intel e Apple Silicon)
+- ✅ **Windows**: 10/11 com WSL2 + Docker Desktop
+- ✅ **Cloud**: AWS, GCP, Azure, DigitalOcean
 
-### **v1.7.0**
-- ✅ Interface web com drag & drop
-- ✅ Sistema de fallback automático
-- ✅ Processamento em background
-- ✅ Download automático de modelos
+## 🤝 **Contribuição**
 
-## 🤝 **Contribuindo**
-
-1. Fork o repositório
-2. Crie branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+### **Como Contribuir**
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
+
+### **Desenvolvimento**
+```bash
+# Setup desenvolvimento
+git clone <repo>
+cd podcast-docker
+
+# Executar testes
+python -m pytest tests/
+
+# Linting
+flake8 src/
+eslint static/app.js
+```
+
+### **Roadmap**
+- [ ] Suporte a mais idiomas (ES, EN, FR)
+- [ ] Interface de configuração web
+- [ ] API REST completa
+- [ ] Webhooks para integração
+- [ ] Música de fundo automática
+- [ ] Templates de podcast
 
 ## 📄 **Licença**
 
-Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## 🙏 **Agradecimentos**
 
-- [Piper TTS](https://github.com/rhasspy/piper) - Engine TTS principal
-- [FFmpeg](https://ffmpeg.org/) - Processamento de áudio
-- [Docker](https://docker.com/) - Containerization
-- [Bootstrap](https://getbootstrap.com/) - UI Framework 
+- **[Piper TTS](https://github.com/rhasspy/piper)** - Engine TTS neural incrível
+- **[Hugging Face](https://huggingface.co/)** - Hospedagem dos modelos de voz
+- **Comunidade Open Source** - Por tornar projetos como este possíveis
+
+---
+
+**💡 Dica**: Para dúvidas ou suporte, abra uma [issue](issues) ou consulte a [documentação completa](docs/).
+
+---
+<div align="center">
+<strong>Feito com ❤️ para democratizar a criação de podcasts de qualidade</strong>
+</div> 
