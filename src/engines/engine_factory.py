@@ -65,9 +65,9 @@ class TTSEngineFactory:
     """
     
     def __init__(self):
-        self._default_engine = "coqui"  # Coqui como padrão por ter melhor qualidade
+        self._default_engine = "piper"  # Piper como padrão
         self._engine_instances: Dict[str, BaseTTSEngine] = {}
-        self._fallback_order = ["coqui", "piper", "macos"]  # Coqui primeiro, depois Piper, depois macOS
+        self._fallback_order = ["piper", "macos"]  # Piper primeiro, depois macOS
         
         # Auto-registrar engines padrão
         self._register_default_engines()
@@ -87,53 +87,8 @@ class TTSEngineFactory:
             description="Engine TTS nativo do macOS usando comando 'say'"
         )
         
-        # Coqui TTS XTTS - Tentar registrar se disponível
-        self._register_coqui_if_available()
-        
         # Piper TTS - Tentar registrar se disponível
         self._register_piper_if_available()
-    
-    def _register_coqui_if_available(self):
-        """Registra Coqui TTS XTTS se estiver disponível no sistema"""
-        try:
-            # Tentar importar CoquiTTSEngine
-            from .coqui_tts import CoquiTTSEngine
-            
-            # Testar se Coqui TTS está funcional
-            test_engine = CoquiTTSEngine()
-            
-            if test_engine._coqui_available and test_engine._model_loaded:
-                # Coqui TTS está funcional, registrar
-                TTSEngineRegistry.register(
-                    "coqui",
-                    CoquiTTSEngine,
-                    platform="cross-platform",
-                    quality="excellent", 
-                    speed="medium",
-                    offline=True,
-                    neural=True,
-                    voice_cloning=True,
-                    multilingual=True,
-                    languages=["pt-BR", "en-US", "es-ES", "fr-FR", "de-DE", "it-IT", "pl-PL", "tr-TR", "ru-RU", "nl-NL", "cs-CZ", "ar-AR", "zh-CN", "ja-JP", "hu-HU", "ko-KR"],
-                    description="Engine TTS neural avançado usando Coqui XTTS v2 com clonagem de voz",
-                    model_name=test_engine._model_name,
-                    speakers_count=len(test_engine._available_speakers),
-                    features=["voice_cloning", "multilingual", "high_quality", "neural"]
-                )
-                
-                logger.info(f"Coqui TTS XTTS registrado com {len(test_engine._available_speakers)} speakers")
-                
-                # Atualizar ordem de fallback (Coqui primeiro por ter melhor qualidade)
-                if "coqui" not in self._fallback_order:
-                    self._fallback_order.insert(0, "coqui")  # Coqui primeiro
-                    
-            else:
-                logger.warning("Coqui TTS encontrado mas modelo não carregado")
-                
-        except ImportError:
-            logger.debug("Módulo CoquiTTS não encontrado")
-        except Exception as e:
-            logger.warning(f"Erro registrando Coqui TTS: {e}")
     
     def _register_piper_if_available(self):
         """Registra Piper TTS se estiver disponível no sistema"""
@@ -162,7 +117,7 @@ class TTSEngineFactory:
                 
                 logger.info(f"Piper TTS registrado com {len(test_engine._available_models)} modelos")
                 
-                # Atualizar ordem de fallback (Piper primeiro se neural)
+                # Atualizar ordem de fallback (Piper primeiro)
                 if "piper" not in self._fallback_order:
                     self._fallback_order.insert(0, "piper")  # Piper primeiro
                     

@@ -4,78 +4,1721 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Podcast TTS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <title>🎙️ Podcast Studio Cyberpunk</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === CYBERPUNK CSS VARIABLES === */
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #1c1c28;
+            --bg-glass: rgba(28, 28, 40, 0.8);
+
+            --neon-pink: #FF1493;
+            --neon-cyan: #00FFFF;
+            --neon-green: #00FF00;
+            --neon-purple: #8A2BE2;
+            --neon-gold: #FFD700;
+            --neon-orange: #FFA500;
+
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8cc;
+            --text-neon: #00FFFF;
+
+            --shadow-pink: 0 0 20px rgba(255, 20, 147, 0.4);
+            --shadow-cyan: 0 0 20px rgba(0, 255, 255, 0.4);
+            --shadow-green: 0 0 20px rgba(0, 255, 0, 0.4);
+            --shadow-purple: 0 0 20px rgba(138, 43, 226, 0.4);
+
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --glitch-duration: 0.3s;
+        }
+
+        /* === RESET & BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* === MATRIX RAIN BACKGROUND === */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.1;
+        }
+
+        .matrix-char {
+            position: absolute;
+            color: var(--neon-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            animation: matrix-fall linear infinite;
+        }
+
+        @keyframes matrix-fall {
+            0% {
+                transform: translateY(-100vh);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        /* === CRT SCANLINES === */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            background: linear-gradient(transparent 0%,
+                    rgba(0, 255, 255, 0.1) 50%,
+                    transparent 100%);
+            background-size: 100% 4px;
+            animation: scanline-move 0.1s linear infinite;
+        }
+
+        @keyframes scanline-move {
+            0% {
+                transform: translateY(-2px);
+            }
+
+            100% {
+                transform: translateY(2px);
+            }
+        }
+
+        /* === MAIN LAYOUT === */
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 2.5rem;
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* === HEADER === */
+        .cyber-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .cyber-logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            animation: glitch-text 2s infinite;
+        }
+
+        .cyber-logo::before {
+            content: '🎙️ PODCAST STUDIO';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glitch-1 0.3s infinite;
+        }
+
+        .cyber-logo::after {
+            content: '🎙️ PODCAST STUDIO';
+            position: absolute;
+            top: 0;
+            left: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glitch-2 0.3s infinite;
+        }
+
+        @keyframes glitch-text {
+
+            0%,
+            90%,
+            100% {
+                transform: translateX(0);
+            }
+
+            95% {
+                transform: translateX(2px);
+            }
+        }
+
+        @keyframes glitch-1 {
+
+            0%,
+            90%,
+            100% {
+                opacity: 0;
+            }
+
+            95% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes glitch-2 {
+
+            0%,
+            90%,
+            100% {
+                opacity: 0;
+            }
+
+            95% {
+                opacity: 0.5;
+            }
+        }
+
+        .cyber-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-neon);
+            margin-top: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--shadow-cyan);
+        }
+
+        /* === MAIN CONTENT AREA === */
+        .main-panel {
+            position: relative;
+            overflow: visible;
+        }
+
+        .panel-content {
+            padding: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === UPLOAD SECTION === */
+        .upload-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            padding: 2rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--neon-cyan);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 20, 147, 0.05));
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-cyan);
+            min-height: 350px;
+            max-width: 500px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--neon-pink);
+            box-shadow: var(--shadow-pink);
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--neon-cyan);
+            margin-bottom: 1rem;
+            text-shadow: var(--shadow-cyan);
+        }
+
+        .upload-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .upload-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        /* === ENGINE SELECTOR === */
+        .engine-selector {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .engine-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            text-shadow: var(--shadow-green);
+        }
+
+        .engine-select {
+            background: linear-gradient(135deg, var(--bg-card), rgba(0, 255, 255, 0.1));
+            border: 1px solid var(--neon-cyan);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .engine-select:hover,
+        .engine-select:focus {
+            border-color: var(--neon-pink);
+            box-shadow: inset 0 0 15px rgba(255, 20, 147, 0.3);
+            outline: none;
+        }
+
+        .engine-select option {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 0.5rem;
+        }
+
+        /* === CYBER BUTTON === */
+        .cyber-btn {
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+            border: none;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: var(--shadow-pink);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: var(--transition);
+        }
+
+        .cyber-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 20, 147, 0.6);
+        }
+
+        .cyber-btn:hover::before {
+            left: 100%;
+        }
+
+        .cyber-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        /* === PROCESSING SECTION === */
+        .processing-container {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .wave-container {
+            display: flex;
+            justify-content: center;
+            align-items: end;
+            gap: 6px;
+            height: 80px;
+            margin-bottom: 2rem;
+        }
+
+        .wave-bar {
+            width: 8px;
+            background: linear-gradient(to top, var(--neon-green), var(--neon-cyan));
+            border-radius: 4px;
+            animation: wave-dance 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .wave-bar:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave-bar:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave-bar:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave-bar:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .wave-bar:nth-child(6) {
+            animation-delay: 0.2s;
+        }
+
+        .wave-bar:nth-child(7) {
+            animation-delay: 0.1s;
+        }
+
+        @keyframes wave-dance {
+
+            0%,
+            100% {
+                height: 20px;
+            }
+
+            50% {
+                height: 80px;
+            }
+        }
+
+        .processing-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            text-shadow: var(--shadow-cyan);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan), var(--neon-pink));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+            animation: progress-shine 2s linear infinite;
+        }
+
+        @keyframes progress-shine {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--neon-green);
+            font-size: 1.2rem;
+            text-shadow: var(--shadow-green);
+        }
+
+        /* === PLAYER SECTION === */
+        .player-container {
+            padding: 2rem;
+        }
+
+        .podcast-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--neon-purple);
+            box-shadow: var(--shadow-purple);
+        }
+
+        .podcast-artwork {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-gold));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-pink);
+        }
+
+        .podcast-details h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .play-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan));
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-pink);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.8);
+        }
+
+        .time-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-neon);
+        }
+
+        .timeline {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            position: relative;
+            border: 1px solid var(--neon-cyan);
+            cursor: pointer;
+        }
+
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .timeline-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* === ACTION BUTTONS === */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .cyber-btn-secondary {
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-gold));
+            border: 2px solid var(--neon-gold);
+            color: white;
+            padding: 0.8rem 1.8rem;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cyber-btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-purple);
+        }
+
+        /* === INSTRUCTIONS PANEL (NOW EXPANDED & NO SCROLL) === */
+        .instructions-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px) saturate(180%);
+            border-radius: 24px;
+            padding: 3rem;
+            height: fit-content;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(0, 255, 0, 0.4),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .instructions-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.8rem;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: var(--shadow-green);
+            text-align: center;
+        }
+
+        .format-section {
+            margin-bottom: 1.8rem;
+        }
+
+        .format-subtitle {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            text-shadow: var(--shadow-cyan);
+        }
+
+        .format-example {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        .format-example::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-green));
+            animation: code-line 2s linear infinite;
+        }
+
+        @keyframes code-line {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .format-example code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-cyan);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            display: block;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        .controls-grid {
+            margin-bottom: 1.8rem;
+        }
+
+        .control-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .control-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.6rem;
+            text-shadow: var(--shadow-purple);
+        }
+
+        .control-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .control-tag {
+            background: var(--bg-card);
+            color: var(--neon-gold);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .control-tag:hover {
+            background: var(--neon-gold);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+            transform: translateY(-1px);
+            border-color: var(--neon-gold);
+        }
+
+        .control-tag:hover::before {
+            left: 100%;
+        }
+
+        .voices-section {
+            margin-bottom: 1.8rem;
+        }
+
+        .voices-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.7rem;
+        }
+
+        .voice-tag {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            padding: 0.7rem;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            transition: var(--transition);
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .voice-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .voice-tag:hover {
+            background: var(--neon-purple);
+            color: white;
+            box-shadow:
+                0 5px 15px rgba(138, 43, 226, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: var(--neon-purple);
+        }
+
+        .voice-tag:hover::before {
+            left: 100%;
+        }
+
+        .tips-section {
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            padding-top: 1.5rem;
+        }
+
+        .tips-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .tip-item:hover {
+            background: rgba(0, 255, 255, 0.05);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .tip-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .tip-item:hover .tip-text {
+            color: var(--neon-cyan);
+        }
+
+        /* === ERROR SECTION === */
+        .error-container {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--neon-pink);
+            margin-bottom: 1.5rem;
+            text-shadow: var(--shadow-pink);
+            animation: error-pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes error-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .error-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--neon-pink);
+            text-transform: uppercase;
+        }
+
+        /* === HIDDEN UTILITY === */
+        .hidden {
+            display: none !important;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                max-width: 800px;
+            }
+
+            .instructions-panel {
+                position: static;
+                order: -1;
+            }
+
+            .cyber-header {
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cyber-logo {
+                font-size: 2.2rem;
+                letter-spacing: 2px;
+            }
+
+            .app-container {
+                padding: 1.5rem;
+                gap: 1.5rem;
+            }
+
+            .upload-zone {
+                padding: 2.5rem 1.5rem;
+                min-height: 280px;
+            }
+
+            .processing-container {
+                padding: 2.5rem 1.5rem;
+                min-height: 280px;
+            }
+
+            .player-container {
+                padding: 1.5rem;
+                min-height: 280px;
+            }
+
+            .error-container {
+                padding: 2.5rem 1.5rem;
+                min-height: 280px;
+            }
+
+            .podcast-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+                padding: 1.2rem;
+            }
+
+            .player-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .time-display {
+                order: 2;
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .voices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .instructions-panel {
+                padding: 1.5rem;
+            }
+
+            .cyber-btn {
+                padding: 0.9rem 2rem;
+                font-size: 0.9rem;
+            }
+
+            .cyber-btn-secondary {
+                padding: 0.7rem 1.3rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 1rem;
+            }
+
+            .cyber-logo {
+                font-size: 1.8rem;
+                letter-spacing: 1px;
+            }
+
+            .cyber-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .upload-zone {
+                padding: 1.8rem 1rem;
+                min-height: 200px;
+            }
+
+            .upload-title {
+                font-size: 1.2rem;
+            }
+
+            .upload-icon {
+                font-size: 2.5rem;
+            }
+
+            .instructions-panel {
+                padding: 1.5rem;
+            }
+
+            .instructions-title {
+                font-size: 1.3rem;
+            }
+
+            .format-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .format-example {
+                padding: 1.5rem;
+            }
+
+            .format-example code {
+                font-size: 0.8rem;
+                line-height: 1.8;
+            }
+
+            .control-title {
+                font-size: 0.85rem;
+            }
+
+            .control-tag {
+                font-size: 0.7rem;
+                padding: 0.5rem 0.8rem;
+            }
+
+            .voice-tag {
+                font-size: 0.75rem;
+                padding: 0.7rem;
+            }
+
+            .tip-item {
+                padding: 0.8rem;
+            }
+
+            .tip-icon {
+                font-size: 1.1rem;
+            }
+
+            .tip-text {
+                font-size: 0.85rem;
+            }
+
+            .voices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-tags {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 0.4rem;
+            }
+
+            .tips-list {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                gap: 0.6rem;
+            }
+        }
+
+        /* === CUSTOM SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--neon-cyan), var(--neon-pink));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--neon-pink), var(--neon-purple));
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="text-center mb-0">🎙️ Gerador de Podcast TTS</h2>
+    <!-- Matrix Rain Background -->
+    <div class="matrix-rain" id="matrix-rain"></div>
+
+    <!-- CRT Scanlines -->
+    <div class="scanlines"></div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="cyber-header">
+            <h1 class="cyber-logo">🎙️ Podcast Studio</h1>
+            <p class="cyber-subtitle">Neural Network Audio Generation</p>
+        </header>
+
+        <!-- Instructions Panel (Now Primary) -->
+        <aside class="instructions-panel">
+            <h2 class="instructions-title">📝 Advanced Script Format</h2>
+
+            <div class="format-section">
+                <h3 class="format-subtitle">Basic Structure</h3>
+                <div class="format-example">
+                    <code>[HOST_MALE]: Welcome to our podcast!</code><br>
+                    <code>[HOST_FEMALE]: Today we'll discuss AI.</code><br>
+                    <code>[EXPERT_MALE]: Neural networks are...</code>
+                </div>
+            </div>
+
+            <div class="format-section">
+                <h3 class="format-subtitle">Advanced Controls</h3>
+                <div class="format-example">
+                    <code>[HOST_MALE]: {emotion: excited} This is amazing! {pause: 0.5} Don't you think, Ana?</code><br><br>
+                    <code>[HOST_FEMALE]: {emphasis: Absolutely}! {emotion: happy} I always tell my students...</code>
+                </div>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <h4 class="control-title">🎭 Emotions</h4>
+                    <div class="control-tags">
+                        <span class="control-tag">{emotion: excited}</span>
+                        <span class="control-tag">{emotion: happy}</span>
+                        <span class="control-tag">{emotion: serious}</span>
+                        <span class="control-tag">{emotion: confident}</span>
+                        <span class="control-tag">{emotion: thoughtful}</span>
+                        <span class="control-tag">{emotion: concerned}</span>
                     </div>
-                    <div class="card-body">
+                </div>
 
-                        <!-- Upload Zone -->
-                        <div id="upload-zone" class="upload-zone text-center p-5 mb-4">
-                            <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-                            <h4>Arraste seu roteiro aqui ou clique para selecionar</h4>
-                            <p class="text-muted">Apenas arquivos .txt são aceitos</p>
-                            <input type="file" id="file-input" class="d-none" accept=".txt">
-                        </div>
+                <div class="control-group">
+                    <h4 class="control-title">⏱️ Timing</h4>
+                    <div class="control-tags">
+                        <span class="control-tag">{pause: 0.3}</span>
+                        <span class="control-tag">{pause: 0.5}</span>
+                        <span class="control-tag">{pause: 1.0}</span>
+                    </div>
+                </div>
 
-                        <!-- Progress Section -->
-                        <div id="progress-section" class="d-none">
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span id="progress-text">Processando...</span>
-                                    <span id="progress-percent">0%</span>
-                                </div>
-                                <div class="progress">
-                                    <div id="progress-bar"
-                                        class="progress-bar progress-bar-striped progress-bar-animated"
-                                        role="progressbar" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Download Section -->
-                        <div id="download-section" class="d-none text-center">
-                            <div class="alert alert-success">
-                                <h5>✅ Podcast gerado com sucesso!</h5>
-                            </div>
-                            <button id="download-btn" class="btn btn-success btn-lg">
-                                📥 Baixar Podcast MP3
-                            </button>
-                        </div>
-
-                        <!-- Error Section -->
-                        <div id="error-section" class="d-none">
-                            <div class="alert alert-danger">
-                                <h5>❌ Erro no processamento</h5>
-                                <p id="error-message"></p>
-                            </div>
-                        </div>
-
-                        <!-- Instructions -->
-                        <div class="mt-4">
-                            <h6>📝 Formato do Roteiro:</h6>
-                            <pre class="bg-light p-3"><code>[HOST_MALE] Olá, bem-vindos ao nosso podcast!
-[HOST_FEMALE] Hoje vamos falar sobre Three.js.
-[HOST_MALE] É uma biblioteca incrível para 3D na web.</code></pre>
-                        </div>
+                <div class="control-group">
+                    <h4 class="control-title">🎯 Emphasis</h4>
+                    <div class="control-tags">
+                        <span class="control-tag">{emphasis: word}</span>
+                        <span class="control-tag">{emphasis: phrase}</span>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="voices-section">
+                <h3 class="format-subtitle">Available Voices</h3>
+                <div class="voices-grid">
+                    <span class="voice-tag">HOST_MALE</span>
+                    <span class="voice-tag">HOST_FEMALE</span>
+                    <span class="voice-tag">EXPERT_MALE</span>
+                    <span class="voice-tag">EXPERT_FEMALE</span>
+                    <span class="voice-tag">GUEST_MALE</span>
+                    <span class="voice-tag">GUEST_FEMALE</span>
+                    <span class="voice-tag">NARRATOR_MALE</span>
+                    <span class="voice-tag">NARRATOR_FEMALE</span>
+                </div>
+            </div>
+
+            <div class="tips-section">
+                <h3 class="format-subtitle">💡 Pro Tips</h3>
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <span class="tip-icon">🎯</span>
+                        <span class="tip-text">Use emotions to create dynamic conversations</span>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">⏱️</span>
+                        <span class="tip-text">Add pauses for natural flow</span>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">🎭</span>
+                        <span class="tip-text">Emphasize key words for impact</span>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">🗣️</span>
+                        <span class="tip-text">Mix different voices for variety</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Panel (Now Secondary) -->
+        <main class="main-panel">
+            <div class="panel-content">
+                <!-- Upload Section -->
+                <section id="upload-section" class="upload-section">
+                    <div id="upload-zone" class="upload-zone">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3 class="upload-title">Upload Your Script</h3>
+                        <p class="upload-subtitle">Drag & drop your .txt file or click to browse</p>
+                        <button class="cyber-btn upload-btn">
+                            <i class="fas fa-file-text"></i>
+                            Choose File
+                        </button>
+                        <input type="file" id="file-input" accept=".txt" hidden>
+                    </div>
+                </section>
+
+                <!-- Processing Section -->
+                <section id="processing-section" class="processing-section hidden">
+                    <div class="processing-container">
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                        <h3 id="processing-title" class="processing-title">Processing Audio...</h3>
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <span id="progress-text" class="progress-text">0%</span>
+                        <p id="processing-detail" class="cyber-subtitle">Initializing neural networks...</p>
+                    </div>
+                </section>
+
+                <!-- Player Section -->
+                <section id="player-section" class="player-section hidden">
+                    <div class="player-container">
+                        <!-- Podcast Info -->
+                        <div class="podcast-info">
+                            <div class="podcast-artwork">
+                                <i class="fas fa-podcast"></i>
+                            </div>
+                            <div class="podcast-details">
+                                <h3 id="podcast-title">Your Cyberpunk Podcast</h3>
+                                <p id="podcast-duration">--:--</p>
+                            </div>
+                        </div>
+
+                        <!-- Audio Player -->
+                        <audio id="audio-element" preload="metadata"></audio>
+
+                        <div class="player-controls">
+                            <button id="play-btn" class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <div class="time-display">
+                                <span id="current-time">0:00</span>
+                                <div class="timeline">
+                                    <div id="timeline-progress" class="timeline-progress"></div>
+                                    <input type="range" id="timeline-slider" class="timeline-slider" min="0" max="100"
+                                        value="0">
+                                </div>
+                                <span id="total-time">0:00</span>
+                            </div>
+                            <button id="volume-btn" class="cyber-btn-secondary">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button id="download-btn" class="cyber-btn">
+                                <i class="fas fa-download"></i>
+                                Download MP3
+                            </button>
+                            <button id="new-podcast-btn" class="cyber-btn-secondary">
+                                <i class="fas fa-plus"></i>
+                                New Podcast
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Section -->
+                <section id="error-section" class="error-section hidden">
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="error-title">System Error</h3>
+                        <p id="error-message" class="cyber-subtitle">Neural network malfunction detected</p>
+                        <button id="retry-btn" class="cyber-btn">
+                            <i class="fas fa-redo"></i>
+                            Retry Process
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <script src="/app.js"></script>
+    <script>
+        // === STATE MANAGEMENT ===
+        let currentJobId = null;
+        let statusInterval = null;
+        let audioPlayer = null;
+        let isDragging = false;
+
+        // === DOM ELEMENTS ===
+        const elements = {
+            // Sections
+            uploadSection: document.getElementById('upload-section'),
+            processingSection: document.getElementById('processing-section'),
+            playerSection: document.getElementById('player-section'),
+            errorSection: document.getElementById('error-section'),
+
+            // Upload
+            uploadZone: document.getElementById('upload-zone'),
+            fileInput: document.getElementById('file-input'),
+            uploadBtn: document.querySelector('.upload-btn'),
+            engineSelect: document.getElementById('engine'),
+
+            // Processing
+            processingTitle: document.getElementById('processing-title'),
+            progressFill: document.getElementById('progress-fill'),
+            progressText: document.getElementById('progress-text'),
+            processingDetail: document.getElementById('processing-detail'),
+
+            // Player
+            audioElement: document.getElementById('audio-element'),
+            playBtn: document.getElementById('play-btn'),
+            currentTime: document.getElementById('current-time'),
+            totalTime: document.getElementById('total-time'),
+            timelineProgress: document.getElementById('timeline-progress'),
+            timelineSlider: document.getElementById('timeline-slider'),
+            volumeBtn: document.getElementById('volume-btn'),
+            podcastTitle: document.getElementById('podcast-title'),
+            podcastDuration: document.getElementById('podcast-duration'),
+
+            // Actions
+            downloadBtn: document.getElementById('download-btn'),
+            newPodcastBtn: document.getElementById('new-podcast-btn'),
+            retryBtn: document.getElementById('retry-btn'),
+
+            // Error
+            errorMessage: document.getElementById('error-message')
+        };
+
+        // === MATRIX RAIN EFFECT ===
+        function createMatrixRain() {
+            const matrixContainer = document.getElementById('matrix-rain');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                char.style.animationDelay = Math.random() * 2 + 's';
+                matrixContainer.appendChild(char);
+            }
+        }
+
+        // === INITIALIZATION ===
+        document.addEventListener('DOMContentLoaded', () => {
+            createMatrixRain();
+            initializeEventListeners();
+            initializeAudioPlayer();
+            showSection('upload');
+        });
+
+        // === EVENT LISTENERS ===
+        function initializeEventListeners() {
+            // Upload events
+            elements.uploadZone.addEventListener('click', () => elements.fileInput.click());
+            elements.uploadBtn.addEventListener('click', () => elements.fileInput.click());
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            elements.uploadZone.addEventListener('dragover', handleDragOver);
+            elements.uploadZone.addEventListener('dragleave', handleDragLeave);
+            elements.uploadZone.addEventListener('drop', handleDrop);
+
+            // Action buttons
+            elements.downloadBtn.addEventListener('click', handleDownload);
+            elements.newPodcastBtn.addEventListener('click', resetToUpload);
+            elements.retryBtn.addEventListener('click', resetToUpload);
+
+            // Player controls
+            elements.playBtn.addEventListener('click', togglePlayPause);
+            elements.timelineSlider.addEventListener('input', handleTimelineChange);
+            elements.timelineSlider.addEventListener('mousedown', () => isDragging = true);
+            elements.timelineSlider.addEventListener('mouseup', () => isDragging = false);
+            elements.volumeBtn.addEventListener('click', toggleMute);
+        }
+
+        // === AUDIO PLAYER ===
+        function initializeAudioPlayer() {
+            if (!elements.audioElement) return;
+
+            audioPlayer = elements.audioElement;
+
+            audioPlayer.addEventListener('loadedmetadata', updateDuration);
+            audioPlayer.addEventListener('timeupdate', updateProgressPlayer);
+            audioPlayer.addEventListener('play', () => updatePlayButton(true));
+            audioPlayer.addEventListener('pause', () => updatePlayButton(false));
+            audioPlayer.addEventListener('ended', () => updatePlayButton(false));
+        }
+
+        function togglePlayPause() {
+            if (!audioPlayer) return;
+
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        }
+
+        function updatePlayButton(isPlaying) {
+            const icon = elements.playBtn.querySelector('i');
+            if (isPlaying) {
+                icon.className = 'fas fa-pause';
+                elements.playBtn.classList.add('playing');
+            } else {
+                icon.className = 'fas fa-play';
+                elements.playBtn.classList.remove('playing');
+            }
+        }
+
+        function updateDuration() {
+            if (!audioPlayer) return;
+
+            const duration = formatTime(audioPlayer.duration);
+            elements.totalTime.textContent = duration;
+            elements.podcastDuration.textContent = duration;
+        }
+
+        function updateProgressPlayer() {
+            if (!audioPlayer || isDragging) return;
+
+            const currentTime = audioPlayer.currentTime;
+            const duration = audioPlayer.duration;
+            const progress = (currentTime / duration) * 100;
+
+            elements.currentTime.textContent = formatTime(currentTime);
+            elements.timelineProgress.style.width = progress + '%';
+            elements.timelineSlider.value = progress;
+        }
+
+        function handleTimelineChange(e) {
+            if (!audioPlayer) return;
+
+            const progress = e.target.value;
+            const time = (progress / 100) * audioPlayer.duration;
+            audioPlayer.currentTime = time;
+
+            elements.timelineProgress.style.width = progress + '%';
+        }
+
+        function toggleMute() {
+            if (!audioPlayer) return;
+
+            audioPlayer.muted = !audioPlayer.muted;
+            const icon = elements.volumeBtn.querySelector('i');
+
+            if (audioPlayer.muted) {
+                icon.className = 'fas fa-volume-mute';
+            } else {
+                icon.className = 'fas fa-volume-up';
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // === FILE HANDLING ===
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) uploadFile(file);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            elements.uploadZone.classList.add('dragover');
+        }
+
+        function handleDragLeave() {
+            elements.uploadZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            elements.uploadZone.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        }
+
+        // === UPLOAD PROCESS ===
+        async function uploadFile(file) {
+            // Validate file
+            if (!file.name.toLowerCase().endsWith('.txt')) {
+                showError('Only .txt files are allowed');
+                return;
+            }
+
+            // Start processing
+            showSection('processing');
+            updateProgress(0, 'Uploading file...');
+
+            // Get selected engine
+            const selectedEngine = document.getElementById('engine').value;
+
+            const formData = new FormData();
+            formData.append('roteiro', file);
+            formData.append('engine', selectedEngine);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentJobId = result.jobId;
+                    updateProgress(10, `File uploaded successfully! Using ${selectedEngine.toUpperCase()} engine...`);
+                    startProgressMonitoring();
+                } else {
+                    showError(result.error || 'File upload error');
+                }
+            } catch (error) {
+                showError('Connection error: ' + error.message);
+            }
+        }
+
+        // === PROGRESS MONITORING ===
+        function startProgressMonitoring() {
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/status/${currentJobId}`);
+                    const status = await response.json();
+
+                    updateProgress(status.progress, status.message);
+
+                    if (status.status === 'completed') {
+                        clearInterval(statusInterval);
+                        statusInterval = null;
+                        loadPodcastPlayer();
+                    } else if (status.status === 'error') {
+                        clearInterval(statusInterval);
+                        statusInterval = null;
+                        showError(status.message || 'Processing error');
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProgress(progress, message, detail = '') {
+            elements.progressFill.style.width = progress + '%';
+            elements.progressText.textContent = Math.round(progress) + '%';
+            elements.processingTitle.textContent = message;
+
+            if (detail) {
+                elements.processingDetail.textContent = detail;
+            }
+
+            // Update processing message based on progress
+            if (progress > 10 && progress < 30) {
+                elements.processingDetail.textContent = 'Analyzing script structure...';
+            } else if (progress >= 30 && progress < 60) {
+                elements.processingDetail.textContent = 'Generating neural audio...';
+            } else if (progress >= 60 && progress < 90) {
+                elements.processingDetail.textContent = 'Optimizing audio output...';
+            } else if (progress >= 90) {
+                elements.processingDetail.textContent = 'Finalizing podcast...';
+            }
+        }
+
+        // === PLAYER LOADING ===
+        async function loadPodcastPlayer() {
+            try {
+                // Set audio source
+                audioPlayer.src = `/download/${currentJobId}`;
+
+                // Update podcast info
+                elements.podcastTitle.textContent = 'Your Cyberpunk Podcast';
+
+                // Show player section
+                showSection('player');
+
+                // Setup download
+                elements.downloadBtn.onclick = handleDownload;
+
+            } catch (error) {
+                showError('Player loading error: ' + error.message);
+            }
+        }
+
+        // === ACTIONS ===
+        function handleDownload() {
+            if (currentJobId) {
+                window.location.href = `/download/${currentJobId}`;
+            }
+        }
+
+        function resetToUpload() {
+            // Clear intervals
+            if (statusInterval) {
+                clearInterval(statusInterval);
+                statusInterval = null;
+            }
+
+            // Reset audio
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.src = '';
+                updatePlayButton(false);
+            }
+
+            // Reset form
+            elements.fileInput.value = '';
+            currentJobId = null;
+
+            // Show upload section
+            showSection('upload');
+        }
+
+        // === SECTION MANAGEMENT ===
+        function showSection(sectionName) {
+            // Hide all sections
+            elements.uploadSection.classList.add('hidden');
+            elements.processingSection.classList.add('hidden');
+            elements.playerSection.classList.add('hidden');
+            elements.errorSection.classList.add('hidden');
+
+            // Show requested section
+            switch (sectionName) {
+                case 'upload':
+                    elements.uploadSection.classList.remove('hidden');
+                    break;
+                case 'processing':
+                    elements.processingSection.classList.remove('hidden');
+                    break;
+                case 'player':
+                    elements.playerSection.classList.remove('hidden');
+                    break;
+                case 'error':
+                    elements.errorSection.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            showSection('error');
+
+            // Auto-reset after 5 seconds
+            setTimeout(() => {
+                if (!elements.errorSection.classList.contains('hidden')) {
+                    resetToUpload();
+                }
+            }, 5000);
+        }
+
+        // === KEYBOARD SHORTCUTS ===
+        document.addEventListener('keydown', (e) => {
+            // Space bar to play/pause (when player is visible)
+            if (e.code === 'Space' && !elements.playerSection.classList.contains('hidden')) {
+                e.preventDefault();
+                togglePlayPause();
+            }
+
+            // Escape to reset
+            if (e.code === 'Escape') {
+                resetToUpload();
+            }
+        });
+    </script>
 </body>
 
 </html>

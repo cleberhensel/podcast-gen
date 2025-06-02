@@ -4,7 +4,7 @@
 # Configurações de Áudio
 audio:
   format: "wav"              # Formato de saída: wav, mp3, aiff
-  sample_rate: 22050         # Taxa de amostragem (Hz)
+  sample_rate: 22050         # Taxa de amostragem (Hz) - Piper TTS
   channels: 1                # Canais: 1 (mono), 2 (estéreo)
   bit_depth: 16              # Profundidade de bits: 16, 24, 32
 
@@ -18,28 +18,8 @@ processing:
   
 # Configurações de Engines TTS
 engines:
-  default: "coqui"           # Engine padrão: coqui, piper, macos
-  
-  coqui:
-    enabled: true
-    model_name: "tts_models/multilingual/multi-dataset/xtts_v2"
-    language: "pt"           # Português brasileiro
-    quality: "excellent"     # Qualidade: high, very_high, excellent
-    device: "cpu"            # Device: cpu, cuda (CPU para compatibilidade Docker)
-    cache_dir: "/home/podcast/.cache/tts"
-    voice_cloning: true      # Habilitar clonagem de voz
-    multilingual: true       # Suporte multilingual
-    neural: true             # Engine neural avançado
-    fallback_to_piper: true  # Fallback para Piper se falhar
+  default: "piper"           # Engine padrão: piper, macos
     
-    # Configurações de qualidade XTTS
-    temperature: 0.7         # Criatividade vs estabilidade (0.1-1.0)
-    length_penalty: 1.0      # Penalidade de comprimento
-    repetition_penalty: 2.0  # Penalidade de repetição
-    top_k: 50               # Top-k sampling
-    top_p: 0.85             # Top-p sampling
-    split_sentences: true    # Dividir sentenças para melhor qualidade
-  
   macos:
     enabled: true
     default_rate: 200        # Palavras por minuto

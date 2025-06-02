@@ -39,27 +39,17 @@ def load_config():
     else:
         # Configuração mínima se arquivo não existir
         config = {
-            'engines': {'default': 'coqui'},  # Usar Coqui como padrão
-            'audio': {'format': 'wav', 'sample_rate': 24000},  # XTTS usa 24kHz
+            'engines': {'default': 'piper'},  # Usar Piper como padrão
+            'audio': {'format': 'wav', 'sample_rate': 22050},  # Piper usa 22kHz
             'output': {'default_directory': 'output/final'}
         }
     
-    # Adaptar caminhos para Docker se usando Piper
-    if 'piper' in config['engines']:
+    # Configurar Piper TTS para Docker
+    if 'piper' not in config['engines']:
         config['engines']['piper'] = {
             'enabled': True,
             'models_path': '/home/podcast/.local/share/piper-tts',
             'fallback_to_macos': False  # Desabilitar macOS no Docker
-        }
-    
-    # Configurar Coqui TTS para Docker
-    if 'coqui' not in config['engines']:
-        config['engines']['coqui'] = {
-            'enabled': True,
-            'model_name': 'tts_models/multilingual/multi-dataset/xtts_v2',
-            'language': 'pt',
-            'device': 'cpu',
-            'cache_dir': '/home/podcast/.cache/tts'
         }
     
     return config

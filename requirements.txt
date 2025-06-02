@@ -5,14 +5,8 @@ pathlib
 typing-extensions>=4.0.0
 regex>=2023.8.8
 
-# PyTorch com versões mais conservadoras
-torch>=1.13.0,<2.1.0
-torchaudio>=0.13.0,<2.1.0
+# Dependências mínimas para áudio (apenas para Piper)
 numpy>=1.21.0,<1.25.0
-scipy>=1.7.0,<1.11.0
-
-# TTS core apenas
-TTS==0.21.3
 
 # Audio processing
 librosa>=0.10.0,<0.11.0
