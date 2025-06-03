@@ -107,20 +107,36 @@ async function processScript(jobId, filePath) {
 
         python.stdout.on('data', (data) => {
             output += data.toString();
+            console.log(`Python stdout: ${data.toString()}`);
             // Parse do progresso se necessário
             updateJobProgress(jobId, data.toString());
         });
 
         python.stderr.on('data', (data) => {
             error += data.toString();
-            console.error(`Erro Python: ${data}`);
+            console.error(`Python stderr: ${data.toString()}`);
         });
 
         python.on('close', (code) => {
             if (code === 0) {
                 updateJob(jobId, 'completed', 100, 'Podcast gerado com sucesso!');
             } else {
-                updateJob(jobId, 'error', 0, `Erro no processamento: ${error}`);
+                // Melhor tratamento de erro para garantir mensagem clara
+                let errorMessage = 'Erro no processamento';
+
+                if (error && error.trim()) {
+                    errorMessage = `Erro no processamento: ${error.trim()}`;
+                } else if (output && output.includes('Error')) {
+                    errorMessage = `Erro no processamento: ${output}`;
+                } else {
+                    errorMessage = `Erro no processamento: Falha na geração do podcast (código: ${code})`;
+                }
+
+                console.error(`Job ${jobId} falhou com código ${code}`);
+                console.error(`Output: ${output}`);
+                console.error(`Error: ${error}`);
+
+                updateJob(jobId, 'error', 0, errorMessage);
             }
 
             // Limpar arquivo de upload

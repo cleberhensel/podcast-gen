@@ -85,7 +85,7 @@ def main():
         logger.info(f"📁 Saída: {output_dir}")
         
         # Configurar engine TTS
-        engine_name = config['engines']['default']
+        engine_name = 'piper'  # Forçar sempre Piper TTS
         logger.info(f"🔧 Configurando engine TTS: {engine_name}")
         
         engine = tts_factory.create_engine(engine_name)

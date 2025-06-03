@@ -65,29 +65,21 @@ class TTSEngineFactory:
     """
     
     def __init__(self):
-        self._default_engine = "piper"  # Piper como padrão
+        self._default_engine = "piper"  # Apenas Piper
         self._engine_instances: Dict[str, BaseTTSEngine] = {}
-        self._fallback_order = ["piper", "macos"]  # Piper primeiro, depois macOS
+        self._fallback_order = ["piper"]  # Apenas Piper
         
-        # Auto-registrar engines padrão
-        self._register_default_engines()
+        # Auto-registrar apenas Piper TTS
+        self._register_piper_only()
     
-    def _register_default_engines(self):
-        """Registra engines padrão do sistema"""
+    def _register_piper_only(self):
+        """Registra APENAS Piper TTS - remove outros engines"""
         
-        # macOS TTS - Sempre disponível no macOS
-        TTSEngineRegistry.register(
-            "macos", 
-            MacOSTTSEngine,
-            platform="macOS",
-            quality="high",
-            speed="fast",
-            offline=True,
-            languages=["pt-BR", "en-US", "es-ES"],
-            description="Engine TTS nativo do macOS usando comando 'say'"
-        )
+        # Limpar registry primeiro
+        TTSEngineRegistry._engines.clear()
+        TTSEngineRegistry._engine_info.clear()
         
-        # Piper TTS - Tentar registrar se disponível
+        # Registrar apenas Piper TTS
         self._register_piper_if_available()
     
     def _register_piper_if_available(self):
@@ -146,35 +138,34 @@ class TTSEngineFactory:
     
     def create_engine(self, name: str, config: Optional[Dict[str, Any]] = None) -> BaseTTSEngine:
         """
-        Cria instância de engine TTS
+        Cria instância de engine TTS - FORÇAR SEMPRE PIPER TTS
         
         Args:
-            name: Nome do engine
+            name: Nome do engine (ignorado - sempre usa Piper)
             config: Configurações específicas do engine
             
         Returns:
-            Instância do engine configurado
+            Instância do engine Piper configurado
             
         Raises:
-            ValueError: Se engine não estiver registrado
-            RuntimeError: Se engine não puder ser criado
+            RuntimeError: Se Piper TTS não puder ser criado
         """
         
-        # Verificar se engine está registrado
-        engine_class = TTSEngineRegistry.get_engine_class(name)
-        if not engine_class:
-            available = TTSEngineRegistry.get_available_engines()
-            raise ValueError(f"Engine '{name}' não registrado. Disponíveis: {available}")
+        # FORÇAR SEMPRE PIPER TTS - ignorar parâmetro name
+        engine_name = "piper"
         
-        # Verificar se já existe instância (singleton por engine)
-        if name in self._engine_instances:
-            logger.debug(f"Retornando instância existente do engine '{name}'")
-            return self._engine_instances[name]
+        # Verificar se já existe instância (singleton)
+        if engine_name in self._engine_instances:
+            logger.debug(f"Retornando instância existente do Piper TTS")
+            return self._engine_instances[engine_name]
         
         try:
+            # Tentar importar PiperTTSEngine diretamente
+            from .piper_tts import PiperTTSEngine
+            
             # Criar nova instância
-            logger.info(f"Criando nova instância do engine '{name}'")
-            engine = engine_class()
+            logger.info(f"Criando nova instância do Piper TTS")
+            engine = PiperTTSEngine()
             
             # Aplicar configurações
             if config:
@@ -182,52 +173,33 @@ class TTSEngineFactory:
             
             # Validar engine
             if not self._validate_engine(engine):
-                raise RuntimeError(f"Engine '{name}' falhou na validação")
+                raise RuntimeError(f"Piper TTS falhou na validação")
             
             # Cache da instância
-            self._engine_instances[name] = engine
+            self._engine_instances[engine_name] = engine
             
-            logger.info(f"Engine '{name}' criado e validado com sucesso")
+            logger.info(f"Piper TTS criado e validado com sucesso")
             return engine
             
         except Exception as e:
-            logger.error(f"Erro criando engine '{name}': {e}")
-            raise RuntimeError(f"Falha ao criar engine '{name}': {e}")
+            logger.error(f"Erro criando Piper TTS: {e}")
+            raise RuntimeError(f"Falha ao criar Piper TTS: {e}")
     
     def create_engine_with_fallback(self, preferred_engine: str, config: Optional[Dict[str, Any]] = None) -> BaseTTSEngine:
         """
-        Cria engine com fallback automático
+        Cria engine - SEMPRE retorna Piper TTS
         
         Args:
-            preferred_engine: Engine preferido
+            preferred_engine: Ignorado (sempre usa Piper)
             config: Configurações
             
         Returns:
-            Engine funcional (pode ser fallback)
+            Engine Piper TTS
         """
         
-        # Determinar ordem de tentativa
-        try_order = [preferred_engine] + [e for e in self._fallback_order if e != preferred_engine]
-        
-        last_error = None
-        
-        for engine_name in try_order:
-            try:
-                logger.info(f"Tentando criar engine: {engine_name}")
-                engine = self.create_engine(engine_name, config)
-                
-                if engine_name != preferred_engine:
-                    logger.warning(f"Usando engine fallback '{engine_name}' (preferido era '{preferred_engine}')")
-                
-                return engine
-                
-            except Exception as e:
-                logger.warning(f"Engine '{engine_name}' falhou: {e}")
-                last_error = e
-                continue
-        
-        # Se chegou aqui, nenhum engine funcionou
-        raise RuntimeError(f"Nenhum engine TTS funcional encontrado. Último erro: {last_error}")
+        # Sempre usar Piper TTS, ignorar preferred_engine
+        logger.info(f"Criando Piper TTS (ignorando engine solicitado: {preferred_engine})")
+        return self.create_engine("piper", config)
     
     def _validate_engine(self, engine: BaseTTSEngine) -> bool:
         """

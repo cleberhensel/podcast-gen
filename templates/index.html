@@ -286,49 +286,15 @@
             font-size: 1rem;
         }
 
-        /* === ENGINE SELECTOR === */
-        .engine-selector {
-            margin-top: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
+        /* === FILE INPUT === */
+        .upload-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 350px;
-        }
-
-        .engine-label {
-            font-family: 'Orbitron', monospace;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--neon-green);
-            text-transform: uppercase;
-            text-shadow: var(--shadow-green);
-        }
-
-        .engine-select {
-            background: linear-gradient(135deg, var(--bg-card), rgba(0, 255, 255, 0.1));
-            border: 1px solid var(--neon-cyan);
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--text-primary);
+            height: 100%;
+            opacity: 0;
             cursor: pointer;
-            transition: var(--transition);
-            box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
-        }
-
-        .engine-select:hover,
-        .engine-select:focus {
-            border-color: var(--neon-pink);
-            box-shadow: inset 0 0 15px rgba(255, 20, 147, 0.3);
-            outline: none;
-        }
-
-        .engine-select option {
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            padding: 0.5rem;
         }
 
         /* === CYBER BUTTON === */
@@ -1348,7 +1314,6 @@
             uploadZone: document.getElementById('upload-zone'),
             fileInput: document.getElementById('file-input'),
             uploadBtn: document.querySelector('.upload-btn'),
-            engineSelect: document.getElementById('engine'),
 
             // Processing
             processingTitle: document.getElementById('processing-title'),
@@ -1403,8 +1368,16 @@
         // === EVENT LISTENERS ===
         function initializeEventListeners() {
             // Upload events
-            elements.uploadZone.addEventListener('click', () => elements.fileInput.click());
-            elements.uploadBtn.addEventListener('click', () => elements.fileInput.click());
+            elements.uploadZone.addEventListener('click', (e) => {
+                // Só abrir se não foi clicado no botão diretamente
+                if (!e.target.closest('.upload-btn')) {
+                    elements.fileInput.click();
+                }
+            });
+            elements.uploadBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevenir bubbling para uploadZone
+                elements.fileInput.click();
+            });
             elements.fileInput.addEventListener('change', handleFileSelect);
 
             // Drag and drop
@@ -1547,12 +1520,8 @@
             showSection('processing');
             updateProgress(0, 'Uploading file...');
 
-            // Get selected engine
-            const selectedEngine = document.getElementById('engine').value;
-
             const formData = new FormData();
             formData.append('roteiro', file);
-            formData.append('engine', selectedEngine);
 
             try {
                 const response = await fetch('/upload', {
@@ -1564,7 +1533,7 @@
 
                 if (response.ok) {
                     currentJobId = result.jobId;
-                    updateProgress(10, `File uploaded successfully! Using ${selectedEngine.toUpperCase()} engine...`);
+                    updateProgress(10, `File uploaded successfully!`);
                     startProgressMonitoring();
                 } else {
                     showError(result.error || 'File upload error');
