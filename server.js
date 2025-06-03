@@ -50,18 +50,41 @@ app.post('/upload', upload.single('roteiro'), async (req, res) => {
         const jobId = req.jobId || uuidv4();
         const filePath = req.file.path;
 
+        // Extrair parâmetros do engine
+        const {
+            engine = 'piper',
+            speaker_wav,
+            language = 'pt'
+        } = req.body;
+
+        // Validar engine
+        const validEngines = ['piper', 'coqui'];
+        const selectedEngine = validEngines.includes(engine) ? engine : 'piper';
+
+        // Validar parâmetros específicos do CoquiTTS
+        if (selectedEngine === 'coqui' && !speaker_wav) {
+            return res.status(400).json({
+                error: 'speaker_wav é obrigatório para CoquiTTS'
+            });
+        }
+
         jobs.set(jobId, {
             status: 'processing',
             progress: 0,
-            message: 'Iniciando processamento...',
-            created: new Date()
+            message: `Iniciando processamento com ${selectedEngine}...`,
+            created: new Date(),
+            engine: selectedEngine
         });
 
         // Responder imediatamente com job ID
-        res.json({ jobId, status: 'started' });
+        res.json({
+            jobId,
+            status: 'started',
+            engine: selectedEngine
+        });
 
         // Processar em background
-        processScript(jobId, filePath);
+        processScript(jobId, filePath, selectedEngine, { speaker_wav, language });
 
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -90,17 +113,31 @@ app.get('/download/:jobId', (req, res) => {
 });
 
 // Função para processar script
-async function processScript(jobId, filePath) {
+async function processScript(jobId, filePath, engine = 'piper', options = {}) {
     try {
-        updateJob(jobId, 'processing', 10, 'Analisando roteiro...');
+        updateJob(jobId, 'processing', 10, `Analisando roteiro com ${engine}...`);
 
-        // Executar Python script
-        const python = spawn('python3', [
+        // Construir argumentos do Python
+        const args = [
             'podcast_generator.py',
             filePath,
             '--output-dir', 'output/final',
-            '--job-id', jobId
-        ]);
+            '--job-id', jobId,
+            '--engine', engine
+        ];
+
+        // Adicionar parâmetros específicos do CoquiTTS
+        if (engine === 'coqui') {
+            if (options.speaker_wav) {
+                args.push('--speaker-wav', options.speaker_wav);
+            }
+            if (options.language) {
+                args.push('--language', options.language);
+            }
+        }
+
+        // Executar Python script
+        const python = spawn('python3', args);
 
         let output = '';
         let error = '';
@@ -109,7 +146,7 @@ async function processScript(jobId, filePath) {
             output += data.toString();
             console.log(`Python stdout: ${data.toString()}`);
             // Parse do progresso se necessário
-            updateJobProgress(jobId, data.toString());
+            updateJobProgress(jobId, data.toString(), engine);
         });
 
         python.stderr.on('data', (data) => {
@@ -119,17 +156,17 @@ async function processScript(jobId, filePath) {
 
         python.on('close', (code) => {
             if (code === 0) {
-                updateJob(jobId, 'completed', 100, 'Podcast gerado com sucesso!');
+                updateJob(jobId, 'completed', 100, `Podcast gerado com sucesso usando ${engine}!`);
             } else {
                 // Melhor tratamento de erro para garantir mensagem clara
-                let errorMessage = 'Erro no processamento';
+                let errorMessage = `Erro no processamento com ${engine}`;
 
                 if (error && error.trim()) {
-                    errorMessage = `Erro no processamento: ${error.trim()}`;
+                    errorMessage = `Erro no processamento com ${engine}: ${error.trim()}`;
                 } else if (output && output.includes('Error')) {
-                    errorMessage = `Erro no processamento: ${output}`;
+                    errorMessage = `Erro no processamento com ${engine}: ${output}`;
                 } else {
-                    errorMessage = `Erro no processamento: Falha na geração do podcast (código: ${code})`;
+                    errorMessage = `Erro no processamento com ${engine}: Falha na geração do podcast (código: ${code})`;
                 }
 
                 console.error(`Job ${jobId} falhou com código ${code}`);
@@ -157,15 +194,19 @@ function updateJob(jobId, status, progress, message) {
 }
 
 // Parse do progresso do Python
-function updateJobProgress(jobId, output) {
-    if (output.includes('Gerando voz masculina')) {
-        updateJob(jobId, 'processing', 30, 'Gerando voz masculina...');
+function updateJobProgress(jobId, output, engine = 'piper') {
+    if (output.includes('Gerando voz masculina') || output.includes('Sintetizando')) {
+        updateJob(jobId, 'processing', 30, `Gerando voz com ${engine}...`);
     } else if (output.includes('Gerando voz feminina')) {
         updateJob(jobId, 'processing', 50, 'Gerando voz feminina...');
     } else if (output.includes('Combinando segmentos')) {
         updateJob(jobId, 'processing', 80, 'Combinando segmentos...');
     } else if (output.includes('MP3 gerado')) {
         updateJob(jobId, 'processing', 95, 'Finalizando...');
+    } else if (output.includes('Inicializando CoquiTTS')) {
+        updateJob(jobId, 'processing', 15, 'Inicializando CoquiTTS xTTS v2...');
+    } else if (output.includes('chunk')) {
+        updateJob(jobId, 'processing', 40, 'Processando segmentos de texto...');
     }
 }
 

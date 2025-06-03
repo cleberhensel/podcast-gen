@@ -4,7 +4,7 @@
 # Configurações de Áudio
 audio:
   format: "wav"              # Formato de saída: wav, mp3, aiff
-  sample_rate: 22050         # Taxa de amostragem (Hz) - Piper TTS
+  sample_rate: 24000         # Taxa de amostragem (Hz) - CoquiTTS xTTS v2 nativo
   channels: 1                # Canais: 1 (mono), 2 (estéreo)
   bit_depth: 16              # Profundidade de bits: 16, 24, 32
 

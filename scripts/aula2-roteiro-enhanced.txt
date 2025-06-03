@@ -1,5 +1,3 @@
-# Game Dev Masters - Aula 2: Geometrias Primitivas do Three.js (Versão Limpa)
-
 [HOST_MALE]: Olá pessoal! Aqui é o Paulo, e bem-vindos ao mais um episódio do Game Dev Masters!
 
 [HOST_FEMALE]: Oi Paulo! Ana aqui, e hoje vamos mergulhar num assunto que eu considero fundamental: as geometrias primitivas do Three.js!

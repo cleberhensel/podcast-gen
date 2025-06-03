@@ -79,6 +79,7 @@ piper-models/
 .env.production.local
 config/local.yaml
 config/production.yaml
+.venv_coqui_macos_test_py311/
 
 # === IDEs & Editors ===
 .vscode/

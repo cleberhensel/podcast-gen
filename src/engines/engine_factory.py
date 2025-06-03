@@ -65,22 +65,21 @@ class TTSEngineFactory:
     """
     
     def __init__(self):
-        self._default_engine = "piper"  # Apenas Piper
+        self._default_engine = "coqui"
         self._engine_instances: Dict[str, BaseTTSEngine] = {}
-        self._fallback_order = ["piper"]  # Apenas Piper
+        self._fallback_order = ["coqui", "piper"]
         
-        # Auto-registrar apenas Piper TTS
-        self._register_piper_only()
+        # Auto-registrar engines disponíveis
+        self._register_available_engines()
     
-    def _register_piper_only(self):
-        """Registra APENAS Piper TTS - remove outros engines"""
+    def _register_available_engines(self):
+        """Registra todos os engines TTS disponíveis no sistema"""
         
-        # Limpar registry primeiro
-        TTSEngineRegistry._engines.clear()
-        TTSEngineRegistry._engine_info.clear()
-        
-        # Registrar apenas Piper TTS
+        # Registrar Piper TTS se disponível
         self._register_piper_if_available()
+        
+        # Registrar CoquiTTS se disponível
+        self._register_coqui_if_available()
     
     def _register_piper_if_available(self):
         """Registra Piper TTS se estiver disponível no sistema"""
@@ -109,10 +108,6 @@ class TTSEngineFactory:
                 
                 logger.info(f"Piper TTS registrado com {len(test_engine._available_models)} modelos")
                 
-                # Atualizar ordem de fallback (Piper primeiro)
-                if "piper" not in self._fallback_order:
-                    self._fallback_order.insert(0, "piper")  # Piper primeiro
-                    
             else:
                 logger.warning("Piper TTS encontrado mas sem modelos disponíveis")
                 
@@ -120,6 +115,37 @@ class TTSEngineFactory:
             logger.debug("Módulo PiperTTS não encontrado")
         except Exception as e:
             logger.warning(f"Erro registrando Piper TTS: {e}")
+    
+    def _register_coqui_if_available(self):
+        """Registra CoquiTTS se estiver disponível no sistema"""
+        try:
+            # Tentar importar CoquiTTSEngine
+            from .coqui_tts import CoquiTTSEngine
+            
+            # Testar se CoquiTTS está funcional
+            test_engine = CoquiTTSEngine()
+            
+            # CoquiTTS está funcional, registrar
+            TTSEngineRegistry.register(
+                "coqui",
+                CoquiTTSEngine,
+                platform="cross-platform",
+                quality="very_high",
+                speed="slow",
+                offline=True,
+                neural=True,
+                voice_cloning=True,
+                languages=["pt", "en", "es", "fr", "de", "it", "pl", "tr", "ru", "nl", "cs", "ar", "zh-cn", "ja", "hu", "ko"],
+                description="Engine TTS neural com clonagem de voz usando xTTS v2",
+                model_name="xtts_v2"
+            )
+            
+            logger.info("CoquiTTS (xTTS v2) registrado com sucesso")
+                
+        except ImportError:
+            logger.debug("Módulo CoquiTTS não encontrado")
+        except Exception as e:
+            logger.warning(f"Erro registrando CoquiTTS: {e}")
     
     def register_engine(self, name: str, engine_class: Type[BaseTTSEngine], **metadata):
         """
@@ -138,34 +164,36 @@ class TTSEngineFactory:
     
     def create_engine(self, name: str, config: Optional[Dict[str, Any]] = None) -> BaseTTSEngine:
         """
-        Cria instância de engine TTS - FORÇAR SEMPRE PIPER TTS
+        Cria instância de engine TTS por nome
         
         Args:
-            name: Nome do engine (ignorado - sempre usa Piper)
+            name: Nome do engine ('piper', 'coqui', etc.)
             config: Configurações específicas do engine
             
         Returns:
-            Instância do engine Piper configurado
+            Instância do engine configurado
             
         Raises:
-            RuntimeError: Se Piper TTS não puder ser criado
+            RuntimeError: Se o engine não puder ser criado
         """
         
-        # FORÇAR SEMPRE PIPER TTS - ignorar parâmetro name
-        engine_name = "piper"
-        
         # Verificar se já existe instância (singleton)
-        if engine_name in self._engine_instances:
-            logger.debug(f"Retornando instância existente do Piper TTS")
-            return self._engine_instances[engine_name]
+        if name in self._engine_instances:
+            logger.debug(f"Retornando instância existente do engine: {name}")
+            return self._engine_instances[name]
+        
+        # Obter classe do engine
+        engine_class = TTSEngineRegistry.get_engine_class(name)
+        
+        if not engine_class:
+            # Engine não encontrado, tentar fallback
+            logger.warning(f"Engine '{name}' não encontrado, tentando fallback")
+            return self.create_engine_with_fallback(name, config)
         
         try:
-            # Tentar importar PiperTTSEngine diretamente
-            from .piper_tts import PiperTTSEngine
-            
             # Criar nova instância
-            logger.info(f"Criando nova instância do Piper TTS")
-            engine = PiperTTSEngine()
+            logger.info(f"Criando nova instância do engine: {name}")
+            engine = engine_class()
             
             # Aplicar configurações
             if config:
@@ -173,33 +201,85 @@ class TTSEngineFactory:
             
             # Validar engine
             if not self._validate_engine(engine):
-                raise RuntimeError(f"Piper TTS falhou na validação")
+                raise RuntimeError(f"Engine '{name}' falhou na validação")
             
             # Cache da instância
-            self._engine_instances[engine_name] = engine
+            self._engine_instances[name] = engine
             
-            logger.info(f"Piper TTS criado e validado com sucesso")
+            logger.info(f"Engine '{name}' criado e validado com sucesso")
             return engine
             
         except Exception as e:
-            logger.error(f"Erro criando Piper TTS: {e}")
-            raise RuntimeError(f"Falha ao criar Piper TTS: {e}")
+            logger.error(f"Erro criando engine '{name}': {e}")
+            # Tentar fallback
+            return self.create_engine_with_fallback(name, config)
     
     def create_engine_with_fallback(self, preferred_engine: str, config: Optional[Dict[str, Any]] = None) -> BaseTTSEngine:
         """
-        Cria engine - SEMPRE retorna Piper TTS
+        Cria engine com fallback automático
         
         Args:
-            preferred_engine: Ignorado (sempre usa Piper)
+            preferred_engine: Engine preferido
             config: Configurações
             
         Returns:
-            Engine Piper TTS
+            Engine funcional (preferido ou fallback)
+            
+        Raises:
+            RuntimeError: Se nenhum engine funcionar
         """
         
-        # Sempre usar Piper TTS, ignorar preferred_engine
-        logger.info(f"Criando Piper TTS (ignorando engine solicitado: {preferred_engine})")
-        return self.create_engine("piper", config)
+        # Criar lista de engines para tentar
+        engines_to_try = []
+        
+        # Adicionar engine preferido primeiro (se válido)
+        if preferred_engine in TTSEngineRegistry.get_available_engines():
+            engines_to_try.append(preferred_engine)
+        
+        # Adicionar engines da ordem de fallback
+        for engine_name in self._fallback_order:
+            if engine_name not in engines_to_try and engine_name in TTSEngineRegistry.get_available_engines():
+                engines_to_try.append(engine_name)
+        
+        # Tentar criar engines em ordem
+        last_error = None
+        for engine_name in engines_to_try:
+            try:
+                logger.info(f"Tentando criar engine: {engine_name}")
+                
+                # Verificar se já existe instância
+                if engine_name in self._engine_instances:
+                    logger.info(f"Usando instância existente: {engine_name}")
+                    return self._engine_instances[engine_name]
+                
+                # Criar nova instância diretamente
+                engine_class = TTSEngineRegistry.get_engine_class(engine_name)
+                engine = engine_class()
+                
+                # Aplicar configurações
+                if config:
+                    engine.configure(config)
+                
+                # Validar
+                if self._validate_engine(engine):
+                    self._engine_instances[engine_name] = engine
+                    logger.info(f"Engine '{engine_name}' criado com sucesso")
+                    return engine
+                else:
+                    logger.warning(f"Engine '{engine_name}' falhou na validação")
+                    
+            except Exception as e:
+                logger.warning(f"Falha criando engine '{engine_name}': {e}")
+                last_error = e
+                continue
+        
+        # Se chegou aqui, nenhum engine funcionou
+        available_engines = TTSEngineRegistry.get_available_engines()
+        error_msg = f"Nenhum engine TTS funcional encontrado. Disponíveis: {available_engines}"
+        if last_error:
+            error_msg += f". Último erro: {last_error}"
+        
+        raise RuntimeError(error_msg)
     
     def _validate_engine(self, engine: BaseTTSEngine) -> bool:
         """

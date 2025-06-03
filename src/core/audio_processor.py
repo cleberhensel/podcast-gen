@@ -29,7 +29,7 @@ class AudioProcessor:
                         segment_files: List[Path], 
                         output_file: Path,
                         format: str = "wav",
-                        sample_rate: int = 22050,
+                        sample_rate: int = 24000,
                         channels: int = 1,
                         normalize: bool = True,
                         apply_compression: bool = True) -> Path:
