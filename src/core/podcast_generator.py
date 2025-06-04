@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 import concurrent.futures
 from datetime import datetime
+import time
 
 from ..models.podcast import Podcast
 from ..models.dialogue import Dialogue
@@ -18,6 +19,16 @@ from ..engines.engine_factory import tts_factory
 from .script_parser import ScriptParser
 from .audio_processor import AudioProcessor
 
+# 🚀 INTEGRAÇÃO COM PLATAFORMA
+try:
+    from ..platform import current_platform
+    from .performance_monitor import PerformanceMonitor
+    PLATFORM_AVAILABLE = True
+except ImportError:
+    PLATFORM_AVAILABLE = False
+    current_platform = None
+    PerformanceMonitor = None
+
 logger = logging.getLogger(__name__)
 
 class PodcastGenerator:
@@ -25,6 +36,26 @@ class PodcastGenerator:
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
+        
+        # 🚀 CONFIGURAÇÃO BASEADA NA PLATAFORMA
+        if PLATFORM_AVAILABLE and current_platform:
+            # Aplicar otimizações da plataforma
+            current_platform.initialize_optimizations()
+            
+            # Obter configurações de performance da plataforma
+            platform_config = current_platform.get_performance_config()
+            
+            # Usar configurações da plataforma como padrão
+            self.max_workers = self.config.get('performance', {}).get('max_workers', platform_config['max_workers'])
+            self.batch_size = platform_config['batch_size']
+            
+            logger.info(f"🚀 PodcastGenerator configurado para {platform_config['platform_type']}")
+            logger.info(f"🚀 Workers: {self.max_workers} | Batch: {self.batch_size}")
+        else:
+            # Configurações padrão se plataforma não disponível
+            self.max_workers = self.config.get('performance', {}).get('max_workers', 4)
+            self.batch_size = 5
+            logger.warning("🚀 PodcastGenerator usando configurações padrão")
         
         # Configurar engine TTS
         self.engine = self._setup_engine()
@@ -34,6 +65,9 @@ class PodcastGenerator:
         
         # Configurar parser de scripts
         self.script_parser = ScriptParser()
+        
+        # 📊 MONITOR DE PERFORMANCE
+        self.performance_monitor = PerformanceMonitor(current_platform) if PerformanceMonitor else None
         
         # Configurações de saída
         self.output_dir = Path(self.config.get('output', {}).get('default_directory', 'output/final'))
@@ -46,7 +80,6 @@ class PodcastGenerator:
         
         # Configurações de performance
         self.parallel_synthesis = self.config.get('performance', {}).get('parallel_synthesis', True)
-        self.max_workers = self.config.get('performance', {}).get('max_workers', 4)
     
     def _setup_engine(self) -> BaseTTSEngine:
         """Configura engine TTS baseado na configuração usando Factory Pattern"""
@@ -131,18 +164,35 @@ class PodcastGenerator:
         logger.info(f"Total de diálogos: {len(podcast.dialogues)}")
         logger.info(f"Duração estimada: {podcast.get_total_estimated_duration():.1f}s")
         
-        # Gerar segmentos de áudio
-        segment_files = self._generate_audio_segments(podcast)
+        # 📊 INICIAR MONITORAMENTO DE PERFORMANCE
+        if self.performance_monitor:
+            self.performance_monitor.start_monitoring(len(podcast.dialogues))
         
-        # Combinar segmentos
-        final_file = self._combine_segments(segment_files, output_file, podcast)
+        # 🚀 MOSTRAR INFORMAÇÕES DA PLATAFORMA
+        if PLATFORM_AVAILABLE and current_platform:
+            if hasattr(current_platform, 'print_optimization_summary'):
+                current_platform.print_optimization_summary()
+            else:
+                logger.debug("Plataforma não tem método print_optimization_summary")
         
-        # Limpeza opcional
-        if not self.config.get('output', {}).get('keep_segments', True):
-            self._cleanup_segments(segment_files)
-        
-        logger.info(f"Podcast gerado com sucesso: {final_file}")
-        return str(final_file)
+        try:
+            # Gerar segmentos de áudio
+            segment_files = self._generate_audio_segments(podcast)
+            
+            # Combinar segmentos
+            final_file = self._combine_segments(segment_files, output_file, podcast)
+            
+            # Limpeza opcional
+            if not self.config.get('output', {}).get('keep_segments', True):
+                self._cleanup_segments(segment_files)
+            
+            logger.info(f"Podcast gerado com sucesso: {final_file}")
+            return str(final_file)
+            
+        finally:
+            # 📊 PARAR MONITORAMENTO E GERAR RELATÓRIO
+            if self.performance_monitor:
+                self.performance_monitor.stop_monitoring()
     
     def _generate_audio_segments(self, podcast: Podcast) -> List[Path]:
         """Gera segmentos de áudio individuais"""
@@ -167,17 +217,26 @@ class PodcastGenerator:
         for i, dialogue in enumerate(podcast.dialogues, 1):
             logger.info(f"Gerando segmento {i}/{len(podcast.dialogues)}: {dialogue.character_id}")
             
+            # 📊 TIMING DO SEGMENTO
+            segment_start = time.time()
+            
             character = podcast.characters[dialogue.character_id]
             segment_file = self._generate_single_segment(dialogue, character, i)
             
             if segment_file:
                 segment_files.append(segment_file)
+                
+                # 📊 ATUALIZAR MONITOR COM TEMPO DO SEGMENTO
+                segment_duration = time.time() - segment_start
+                if self.performance_monitor:
+                    self.performance_monitor.update_progress(i, segment_duration)
         
         return segment_files
     
     def _generate_segments_parallel(self, podcast: Podcast) -> List[Path]:
         """Gera segmentos em paralelo"""
         segment_files = [None] * len(podcast.dialogues)
+        completed_count = 0
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # Submeter tasks
@@ -193,6 +252,12 @@ class PodcastGenerator:
                 try:
                     segment_file = future.result()
                     segment_files[index] = segment_file
+                    completed_count += 1
+                    
+                    # 📊 ATUALIZAR MONITOR (paralelo não tem timing individual preciso)
+                    if self.performance_monitor:
+                        self.performance_monitor.update_progress(completed_count)
+                        
                     logger.info(f"Segmento {index + 1} gerado: {segment_file}")
                 except Exception as e:
                     logger.error(f"Erro gerando segmento {index + 1}: {e}")
@@ -214,6 +279,12 @@ class PodcastGenerator:
                 f.write(result.audio_data)
             
             logger.debug(f"Segmento salvo: {segment_file}")
+            
+            # 🧹 CLEANUP BASEADO NA PLATAFORMA A CADA SEGMENTO
+            if PLATFORM_AVAILABLE and current_platform and hasattr(current_platform, 'should_cleanup_memory') and callable(current_platform.should_cleanup_memory) and current_platform.should_cleanup_memory():
+                current_platform.cleanup_gpu_memory()
+                logger.debug("🧹 Cleanup de memória executado")
+            
             return segment_file
             
         except Exception as e:

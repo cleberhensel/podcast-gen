@@ -7,9 +7,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 import io
+import logging
 
 from ..models.character import Character
 from ..models.dialogue import Dialogue
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class TTSResult:
@@ -55,7 +58,7 @@ class BaseTTSEngine(ABC):
         Returns:
             Lista de dicionários com informações das vozes
         """
-        pass
+        return []
     
     @abstractmethod
     def is_voice_available(self, voice_id: str) -> bool:
@@ -66,9 +69,10 @@ class BaseTTSEngine(ABC):
             voice_id: ID da voz
             
         Returns:
-            True se a voz estiver disponível
+            True se disponível
         """
-        pass
+        available_voices = self.get_available_voices()
+        return any(voice.get('id') == voice_id for voice in available_voices)
     
     def configure(self, config: Dict[str, Any]):
         """Configura o engine com parâmetros específicos"""
@@ -117,47 +121,58 @@ class BaseTTSEngine(ABC):
                 return voice
         return None
     
+    def configure_podcast_voices(self, male_voice: str = None, female_voice_1: str = None, female_voice_2: str = None, characters_in_script: set = None):
+        """
+        Configura vozes para um podcast específico de forma consistente
+        
+        MÉTODO BASE - Implementações específicas devem sobrescrever
+        
+        Args:
+            male_voice: Caminho para voz masculina (será usada para HOST_MALE)
+            female_voice_1: Primeira opção de voz feminina 
+            female_voice_2: Segunda opção de voz feminina (fallback)
+            characters_in_script: Set com IDs dos personagens no roteiro
+        """
+        logger.info(f"🎭 Engine {self.name} não suporta configuração de vozes específicas")
+        logger.info(f"   • Usando vozes padrão do engine")
+        
+        # Para engines que não suportam vozes específicas, apenas log
+        if male_voice:
+            logger.debug(f"   • Voz masculina ignorada: {male_voice}")
+        if female_voice_1:
+            logger.debug(f"   • Voz feminina ignorada: {female_voice_1}")
+
     def test_synthesis(self, text: str = "Teste de síntese de voz") -> bool:
         """
-        Testa se o engine está funcionando corretamente
+        Testa se o engine está funcionando
         
         Args:
             text: Texto de teste
             
         Returns:
-            True se o teste foi bem-sucedido
+            True se funcionando
         """
         try:
+            # Implementação básica - tentar síntese com personagem padrão
+            from ..models.character import Character
             from ..models.dialogue import Dialogue
-            from ..models.character import Character, Gender, VoiceStyle
             
-            # Criar personagem de teste simples
-            voices = self.get_available_voices()
-            if not voices:
-                return False
-            
-            # Usar primeira voz disponível
-            test_voice = voices[0]['id']
-            
-            test_char = Character(
-                name="Teste",
+            test_character = Character(
                 id="test",
-                gender=Gender.NEUTRAL,
-                voice_id=test_voice,
-                voice_style=VoiceStyle.CONVERSATIONAL
+                name="Test Speaker",
+                voice_id="default"
             )
             
             test_dialogue = Dialogue(
-                character_id=test_char.id,
-                text=text,
-                sequence=1
+                character_id="test",
+                text=text[:50]  # Texto curto para teste
             )
             
-            result = self.synthesize(test_dialogue, test_char)
-            return len(result.audio_data) > 0
+            result = self.synthesize(test_dialogue, test_character)
+            return result is not None and len(result.audio_data) > 0
             
         except Exception as e:
-            print(f"Erro no teste de síntese: {e}")
+            logger.debug(f"Teste de síntese falhou: {e}")
             return False
     
     def get_engine_info(self) -> Dict[str, Any]:

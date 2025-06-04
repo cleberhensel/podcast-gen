@@ -15,6 +15,22 @@ from typing import Optional
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
+# 🚀 DETECÇÃO DE PLATAFORMA E INICIALIZAÇÃO
+try:
+    from src.platform import PlatformDetector, current_platform
+    PLATFORM_AVAILABLE = True
+    
+    # Mostrar informações da plataforma detectada
+    print("\n" + "="*60)
+    print("🚀 SISTEMA DE PODCAST TTS MULTI-PLATAFORMA")
+    print("="*60)
+    PlatformDetector.print_platform_summary()
+    
+except ImportError as e:
+    print(f"⚠️ Plataforma não detectada: {e}")
+    PLATFORM_AVAILABLE = False
+    current_platform = None
+
 from src.core.podcast_generator import PodcastGenerator
 from src.core.script_parser import ScriptParser
 from src.engines.engine_factory import tts_factory

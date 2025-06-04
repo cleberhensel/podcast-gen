@@ -1,0 +1,50 @@
+[HOST_MALE]: Olá, sejam bem-vindos ao IAspas, o seu podcast que decifra o Diário Oficial de Porto Alegre
+[HOST_FEMALE]: Oi pessoal, hoje analisamos as edições dos dias dois e três de junho de dois mil e vinte e cinco
+[HOST_MALE]: E encontramos muitas novidades importantes para a cidade, desde novas leis até contratações e licitações
+[HOST_FEMALE]: Vamos começar pelas novas leis que foram sancionadas, Arthur?
+[HOST_MALE]: Claro, Maria; Tivemos a Lei catorze mil duzentos e quarenta e três, que declara o Rotary Club de utilidade pública
+[HOST_MALE]: E a Lei catorze mil duzentos e quarenta e quatro, que reconhece a Descida da Borges como bem cultural imaterial
+[HOST_FEMALE]: Que interessante, Arthur; A Descida da Borges é uma tradição muito forte na nossa cultura local
+[HOST_FEMALE]: Também tivemos a Lei catorze mil duzentos e quarenta e cinco, declarando a Banda da Brigada Militar como bem cultural
+[HOST_MALE]: Exato, e a Lei catorze mil duzentos e quarenta e seis, que deu nome a uma praça no bairro Aberta dos Morros
+[HOST_MALE]: Chamará Waldir Antonio Bronzatto, uma homenagem importante para a comunidade
+[HOST_FEMALE]: Falando em comunidade, a Lei Complementar mil e quarenta e dois autoriza a venda de um imóvel para a COOPLAMI
+[HOST_FEMALE]: O objetivo é a construção de moradias de interesse social, uma notícia muito esperada
+[HOST_MALE]: Sim, um passo importante para a habitação popular, mas que exige fiscalização rigorosa na aplicação dos recursos
+[HOST_FEMALE]: E por fim, o Decreto vinte e três mil trezentos e quinze aprovou o novo regimento interno do Conselho de Mobilidade Urbana
+[HOST_MALE]: Isso deve organizar melhor a participação da sociedade nas discussões sobre trânsito e transporte
+[HOST_FEMALE]: Essas leis mostram um foco em cultura, serviço comunitário e também em questões sociais e urbanas
+[HOST_MALE]: Sem dúvida, Maria; E o impacto prático dessas declarações de utilidade pública e bem imaterial, qual seria?
+[HOST_FEMALE]: Geralmente, abre portas para fomentos e preserva a memória e identidade da cidade
+[HOST_MALE]: Entendido; Passando para o nosso segundo tema, tivemos muita movimentação no serviço público
+[HOST_FEMALE]: Sim, a prefeitura abriu processos seletivos para reforçar a equipe da saúde durante a Operação Inverno
+[HOST_FEMALE]: O Edital setenta de dois mil e vinte e cinco busca biomédicos, farmacêuticos e médicos emergencistas
+[HOST_MALE]: Além de técnicos em enfermagem e em nutrição e dietética; Um reforço necessário para o período mais frio
+[HOST_FEMALE]: Também houve convocação para contratação temporária de agentes de combate a endemias, biólogos e veterinários
+[HOST_MALE]: Pelo Edital oitenta e sete de dois mil e vinte e cinco, são ações importantes da vigilância em saúde
+[HOST_FEMALE]: E na educação, o Edital oitenta e três de dois mil e vinte e cinco prevê a contratação temporária de professores
+[HOST_MALE]: Para anos iniciais, educação física, geografia, espanhol e português, buscando suprir carências
+[HOST_FEMALE]: Essas contratações temporárias são soluções rápidas, mas será que resolvem o problema a longo prazo?
+[HOST_MALE]: É um debate válido, Maria; A agilidade é importante, mas a continuidade e o vínculo também são essenciais
+[HOST_FEMALE]: Exatamente; Além dos temporários, vimos nomeações de servidores efetivos em várias áreas
+[HOST_MALE]: Como auditores fiscais, assistentes sociais e arquitetos; Isso fortalece o quadro permanente
+[HOST_FEMALE]: Mas também um volume considerável de exonerações e aposentadorias, o que gera necessidade de reposição
+[HOST_MALE]: Um ciclo constante na administração pública; Agora, vamos ao nosso terceiro tema, a gestão de contratos e licitações
+[HOST_FEMALE]: Começando por um contrato de peso, Arthur; A SMAP contratou a PROCEMPA por mais de um vírgula oito milhão de reais
+[HOST_FEMALE]: O objetivo é implementar a nova versão do sistema de gestão de RH e folha de pagamento, o ERGON NG
+[HOST_MALE]: Um investimento alto, que se espera traga mais eficiência e modernização para a gestão interna da prefeitura
+[HOST_FEMALE]: Outra contratação que chamou atenção foi para a décima sexta Conferência Municipal de Assistência Social
+[HOST_MALE]: Publicada em edição extra, o Pregão Eletrônico cento e sessenta e oito de dois mil e vinte e cinco busca empresa de eventos
+[FEMALE_HOST]: Essa conferência é um espaço importante de debate e formulação de políticas sociais
+[HOST_MALE]: E falando em gestão, vimos a designação de fiscais para o Termo de Alienação de Solo Criado pela SMAMUS
+[HOST_FEMALE]: Isso envolve contrapartidas importantes, como a área para o Centro de Monitoramento Climático
+[HOST_MALE]: A fiscalização nesses casos é fundamental para garantir que a cidade receba o que foi acordado
+[HOST_FEMALE]: E quando não há cumprimento, Arthur? Vimos notificações de sanção, não é?
+[HOST_MALE]: Sim, a SMEL, Secretaria de Esporte e Lazer, notificou a Lince Segurança e também o Grupo SS Multiservice
+[HOST_FEMALE]: No caso do Grupo SS Multiservice, por falhas na substituição de funcionários da limpeza
+[HOST_MALE]: Mostra que há um controle, mas a questão é se as penalidades são efetivas para evitar reincidências
+[FEMALE_HOST]: É fundamental que o dinheiro público seja bem empregado e os serviços bem prestados à população
+[HOST_MALE]: Concordo plenamente, Maria; A transparência e o acompanhamento são essenciais
+[HOST_FEMALE]: E com isso, encerramos mais um IAspas, tentando traduzir o que acontece nos bastidores da administração
+[HOST_MALE]: Continue nos acompanhando e fiscalizando junto com a gente; Até a próxima!
+[HOST_FEMALE]: Tchau, pessoal!

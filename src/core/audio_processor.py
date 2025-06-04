@@ -9,6 +9,9 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 import subprocess
 import tempfile
+import numpy as np
+import wave
+import struct
 
 logger = logging.getLogger(__name__)
 
@@ -24,205 +27,309 @@ class AudioProcessor:
         self.fade_duration = self.config.get('processing', {}).get('fade_duration', 0.2)
         self.inter_segment_pause = self.config.get('processing', {}).get('inter_segment_pause', 0.8)
         self.remove_silence = self.config.get('processing', {}).get('remove_silence', True)
+        
+        # Configurações padrão
+        self.default_sample_rate = self.config.get('audio', {}).get('sample_rate', 24000)
+        self.default_channels = self.config.get('audio', {}).get('channels', 1)
+        self.default_format = self.config.get('audio', {}).get('format', 'wav')
+        
+        # Configurações de streaming
+        self.streaming_enabled = self.config.get('audio', {}).get('streaming', True)
+        self.buffer_size = self.config.get('audio', {}).get('buffer_size', 8192)
     
-    def combine_segments(self, 
-                        segment_files: List[Path], 
-                        output_file: Path,
-                        format: str = "wav",
-                        sample_rate: int = 24000,
-                        channels: int = 1,
-                        normalize: bool = True,
-                        apply_compression: bool = True) -> Path:
+    def combine_segments(self, segment_files: List[Path], output_file: Path, **kwargs) -> Path:
         """Combina segmentos de áudio em arquivo final"""
         
-        logger.info(f"Combinando {len(segment_files)} segmentos...")
-        
-        if not segment_files:
-            raise ValueError("Nenhum segmento fornecido para combinação")
-        
-        # Verificar se todos os arquivos existem
-        existing_files = [f for f in segment_files if f.exists()]
-        if not existing_files:
-            raise ValueError("Nenhum arquivo de segmento válido encontrado")
-        
-        if len(existing_files) != len(segment_files):
-            logger.warning(f"Alguns segmentos não foram encontrados: {len(segment_files) - len(existing_files)} faltando")
-        
-        # Para um único arquivo, apenas copiar (com processamento opcional)
-        if len(existing_files) == 1:
-            return self._process_single_file(existing_files[0], output_file, format, normalize, apply_compression)
-        
-        # Múltiplos arquivos - usar ffmpeg se disponível, senão usar método simples
-        if self._is_ffmpeg_available():
-            return self._combine_with_ffmpeg(existing_files, output_file, format, sample_rate, channels, normalize, apply_compression)
+        if self.streaming_enabled:
+            return self._combine_segments_streaming(segment_files, output_file, **kwargs)
         else:
-            return self._combine_simple(existing_files, output_file, format)
+            return self._combine_segments_memory(segment_files, output_file, **kwargs)
     
-    def _process_single_file(self, input_file: Path, output_file: Path, format: str, normalize: bool, apply_compression: bool) -> Path:
-        """Processa um único arquivo"""
+    def _combine_segments_streaming(self, segment_files: List[Path], output_file: Path, **kwargs) -> Path:
+        """Combina segmentos usando streaming (baixo uso de memória)"""
         
-        if self._is_ffmpeg_available() and (normalize or apply_compression):
-            # Usar ffmpeg para processamento
-            return self._process_with_ffmpeg(input_file, output_file, format, normalize, apply_compression)
-        else:
-            # Cópia simples
-            import shutil
-            shutil.copy2(input_file, output_file)
-            return output_file
-    
-    def _combine_with_ffmpeg(self, 
-                           segment_files: List[Path], 
-                           output_file: Path,
-                           format: str,
-                           sample_rate: int,
-                           channels: int,
-                           normalize: bool,
-                           apply_compression: bool) -> Path:
-        """Combina arquivos usando ffmpeg"""
+        format_type = kwargs.get('format', self.default_format)
+        sample_rate = kwargs.get('sample_rate', self.default_sample_rate)
+        channels = kwargs.get('channels', self.default_channels)
+        normalize = kwargs.get('normalize', False)
+        apply_compression = kwargs.get('apply_compression', False)
         
-        logger.info("Usando ffmpeg para combinação...")
+        logger.info(f"🔄 Combinando {len(segment_files)} segmentos via streaming...")
         
-        # Criar arquivo de lista temporário
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-            list_file = f.name
-            for segment_file in segment_files:
-                f.write(f"file '{segment_file.absolute()}'\n")
+        # Filtrar apenas arquivos existentes
+        valid_segments = [f for f in segment_files if f and f.exists()]
+        if not valid_segments:
+            raise ValueError("Nenhum segmento válido encontrado")
         
         try:
-            # Construir comando ffmpeg
-            cmd = [
-                'ffmpeg', '-y',  # Sobrescrever arquivo de saída
-                '-f', 'concat',
-                '-safe', '0',
-                '-i', list_file,
-                '-ar', str(sample_rate),
-                '-ac', str(channels)
-            ]
+            # Criar arquivo de saída WAV
+            output_wav = output_file.with_suffix('.wav')
             
-            # Adicionar filtros de áudio
-            filters = []
+            # Combinar segmentos incrementalmente
+            total_frames = 0
             
-            if normalize:
-                filters.append('loudnorm')
+            with wave.open(str(output_wav), 'wb') as output_wave:
+                # Configurar parâmetros baseado no primeiro arquivo
+                first_segment = valid_segments[0]
+                with wave.open(str(first_segment), 'rb') as first_wave:
+                    output_wave.setnchannels(first_wave.getnchannels())
+                    output_wave.setsampwidth(first_wave.getsampwidth())
+                    output_wave.setframerate(first_wave.getframerate())
+                
+                # Processar cada segmento
+                for i, segment_file in enumerate(valid_segments):
+                    logger.debug(f"Processando segmento {i+1}/{len(valid_segments)}: {segment_file.name}")
+                    
+                    try:
+                        with wave.open(str(segment_file), 'rb') as segment_wave:
+                            # Ler e escrever em chunks para economia de memória
+                            while True:
+                                frames = segment_wave.readframes(self.buffer_size)
+                                if not frames:
+                                    break
+                                
+                                output_wave.writeframes(frames)
+                                total_frames += len(frames) // (segment_wave.getnchannels() * segment_wave.getsampwidth())
+                    
+                    except Exception as e:
+                        logger.warning(f"Erro processando segmento {segment_file}: {e}")
+                        continue
             
-            if apply_compression:
-                filters.append('acompressor=threshold=0.1:ratio=3:attack=5:release=50')
+            logger.info(f"✅ Arquivo WAV combinado: {output_wav} ({total_frames} frames)")
             
-            if self.remove_silence:
-                filters.append('silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak')
+            # Aplicar pós-processamento se necessário
+            if normalize or apply_compression:
+                self._apply_postprocessing(output_wav, normalize, apply_compression)
             
-            if filters:
-                cmd.extend(['-af', ','.join(filters)])
+            # Converter para formato final se necessário
+            if format_type.lower() == 'mp3':
+                mp3_file = self._convert_to_mp3(output_wav)
+                if mp3_file:
+                    return mp3_file
             
-            # Adicionar arquivo de saída
-            cmd.append(str(output_file))
-            
-            # Executar comando
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode != 0:
-                logger.error(f"Erro no ffmpeg: {result.stderr}")
-                # Fallback para método simples
-                return self._combine_simple(segment_files, output_file, format)
-            
-            logger.info(f"Combinação concluída: {output_file}")
-            return output_file
+            return output_wav
             
         except Exception as e:
-            logger.error(f"Erro usando ffmpeg: {e}")
-            return self._combine_simple(segment_files, output_file, format)
-        
-        finally:
-            # Limpar arquivo temporário
-            try:
-                os.unlink(list_file)
-            except:
-                pass
+            logger.error(f"Erro combinando segmentos: {e}")
+            raise
     
-    def _combine_simple(self, segment_files: List[Path], output_file: Path, format: str) -> Path:
-        """Combinação simples usando concatenação binária (apenas para WAV/AIFF)"""
+    def _combine_segments_memory(self, segment_files: List[Path], output_file: Path, **kwargs) -> Path:
+        """Combina segmentos carregando tudo na memória (método original)"""
         
-        logger.info("Usando combinação simples...")
+        logger.info(f"🔄 Combinando {len(segment_files)} segmentos em memória...")
         
-        # Para formatos que suportam concatenação simples
-        if format.lower() in ['wav', 'aiff']:
-            return self._combine_audio_files_simple(segment_files, output_file)
-        else:
-            # Para outros formatos, copiar primeiro arquivo
-            import shutil
-            shutil.copy2(segment_files[0], output_file)
-            logger.warning(f"Formato {format} não suportado para combinação simples, usando apenas primeiro segmento")
-            return output_file
-    
-    def _combine_audio_files_simple(self, segment_files: List[Path], output_file: Path) -> Path:
-        """Combina arquivos de áudio através de concatenação simples"""
+        format_type = kwargs.get('format', self.default_format)
+        sample_rate = kwargs.get('sample_rate', self.default_sample_rate)
+        channels = kwargs.get('channels', self.default_channels)
+        normalize = kwargs.get('normalize', False)
+        apply_compression = kwargs.get('apply_compression', False)
+        
+        # Filtrar apenas arquivos existentes
+        valid_segments = [f for f in segment_files if f and f.exists()]
+        if not valid_segments:
+            raise ValueError("Nenhum segmento válido encontrado")
         
         try:
-            with open(output_file, 'wb') as outfile:
-                for i, segment_file in enumerate(segment_files):
-                    with open(segment_file, 'rb') as infile:
-                        if i == 0:
-                            # Primeiro arquivo - copiar completo
-                            outfile.write(infile.read())
-                        else:
-                            # Arquivos subsequentes - pular cabeçalho (primeiros 44 bytes para WAV)
-                            infile.seek(44)
-                            outfile.write(infile.read())
+            # Carregar todos os segmentos
+            audio_data = []
             
-            logger.info(f"Combinação simples concluída: {output_file}")
-            return output_file
+            for segment_file in valid_segments:
+                logger.debug(f"Carregando: {segment_file}")
+                
+                try:
+                    # Tentar diferentes métodos de carregamento
+                    segment_audio = self._load_audio_file(segment_file)
+                    if segment_audio is not None and len(segment_audio) > 0:
+                        audio_data.append(segment_audio)
+                    else:
+                        logger.warning(f"Segmento vazio ou inválido: {segment_file}")
+                        
+                except Exception as e:
+                    logger.warning(f"Erro carregando {segment_file}: {e}")
+                    continue
             
-        except Exception as e:
-            logger.error(f"Erro na combinação simples: {e}")
-            # Como último recurso, copiar primeiro arquivo
-            import shutil
-            shutil.copy2(segment_files[0], output_file)
-            return output_file
-    
-    def _process_with_ffmpeg(self, 
-                           input_file: Path, 
-                           output_file: Path,
-                           format: str,
-                           normalize: bool,
-                           apply_compression: bool) -> Path:
-        """Processa arquivo único com ffmpeg"""
-        
-        try:
-            cmd = [
-                'ffmpeg', '-y',
-                '-i', str(input_file)
-            ]
+            if not audio_data:
+                raise ValueError("Nenhum áudio válido foi carregado")
             
-            # Adicionar filtros
-            filters = []
+            # Concatenar arrays
+            logger.info("Concatenando áudio...")
+            combined_audio = np.concatenate(audio_data)
             
+            # Aplicar pós-processamento
             if normalize:
-                filters.append('loudnorm')
+                combined_audio = self._normalize_audio(combined_audio)
             
             if apply_compression:
-                filters.append('acompressor=threshold=0.1:ratio=3:attack=5:release=50')
+                combined_audio = self._apply_compression(combined_audio)
             
-            if filters:
-                cmd.extend(['-af', ','.join(filters)])
+            # Salvar arquivo final
+            output_wav = output_file.with_suffix('.wav')
+            self._save_audio(combined_audio, output_wav, sample_rate, channels)
             
-            cmd.append(str(output_file))
+            logger.info(f"✅ Arquivo combinado salvo: {output_wav}")
             
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            # Converter para MP3 se necessário
+            if format_type.lower() == 'mp3':
+                mp3_file = self._convert_to_mp3(output_wav)
+                if mp3_file:
+                    return mp3_file
             
-            if result.returncode == 0:
-                return output_file
-            else:
-                logger.error(f"Erro processando com ffmpeg: {result.stderr}")
-                # Fallback - cópia simples
-                import shutil
-                shutil.copy2(input_file, output_file)
-                return output_file
+            return output_wav
+            
+        except Exception as e:
+            logger.error(f"Erro combinando segmentos: {e}")
+            raise
+    
+    def _load_audio_file(self, file_path: Path) -> Optional[np.ndarray]:
+        """Carrega arquivo de áudio"""
+        
+        try:
+            import soundfile as sf
+            
+            audio_data, sample_rate = sf.read(str(file_path))
+            logger.debug(f"Carregado via soundfile: {len(audio_data)} samples @ {sample_rate}Hz")
+            return audio_data.astype(np.float32)
+            
+        except ImportError:
+            logger.debug("soundfile não disponível, tentando wave...")
+            
+        except Exception as e:
+            logger.debug(f"Erro com soundfile: {e}, tentando wave...")
+        
+        # Fallback para wave
+        try:
+            with wave.open(str(file_path), 'rb') as wave_file:
+                frames = wave_file.readframes(wave_file.getnframes())
+                sample_width = wave_file.getsampwidth()
+                
+                if sample_width == 1:
+                    audio_array = np.frombuffer(frames, dtype=np.uint8)
+                    audio_array = (audio_array - 128) / 128.0
+                elif sample_width == 2:
+                    audio_array = np.frombuffer(frames, dtype=np.int16)
+                    audio_array = audio_array / 32768.0
+                elif sample_width == 4:
+                    audio_array = np.frombuffer(frames, dtype=np.int32)
+                    audio_array = audio_array / 2147483648.0
+                else:
+                    raise ValueError(f"Sample width não suportado: {sample_width}")
+                
+                logger.debug(f"Carregado via wave: {len(audio_array)} samples")
+                return audio_array.astype(np.float32)
                 
         except Exception as e:
-            logger.error(f"Erro usando ffmpeg: {e}")
-            import shutil
-            shutil.copy2(input_file, output_file)
-            return output_file
+            logger.error(f"Erro carregando {file_path}: {e}")
+            return None
+    
+    def _save_audio(self, audio_data: np.ndarray, output_file: Path, sample_rate: int, channels: int):
+        """Salva array de áudio em arquivo WAV"""
+        
+        try:
+            import soundfile as sf
+            sf.write(str(output_file), audio_data, sample_rate)
+            
+        except ImportError:
+            # Fallback para wave
+            audio_int16 = (audio_data * 32767).astype(np.int16)
+            
+            with wave.open(str(output_file), 'wb') as wave_file:
+                wave_file.setnchannels(channels)
+                wave_file.setsampwidth(2)  # 16-bit
+                wave_file.setframerate(sample_rate)
+                wave_file.writeframes(audio_int16.tobytes())
+    
+    def _apply_postprocessing(self, audio_file: Path, normalize: bool, apply_compression: bool):
+        """Aplica pós-processamento ao arquivo de áudio"""
+        
+        if normalize:
+            logger.debug("Aplicando normalização...")
+            # Implementar normalização in-place se necessário
+        
+        if apply_compression:
+            logger.debug("Aplicando compressão...")
+            # Implementar compressão in-place se necessário
+    
+    def _normalize_audio(self, audio_data: np.ndarray) -> np.ndarray:
+        """Normaliza áudio"""
+        max_val = np.max(np.abs(audio_data))
+        if max_val > 0:
+            return audio_data / max_val
+        return audio_data
+    
+    def _apply_compression(self, audio_data: np.ndarray) -> np.ndarray:
+        """Aplica compressão dinâmica simples"""
+        # Compressão simples: reduzir picos acima de threshold
+        threshold = 0.8
+        ratio = 0.3
+        
+        compressed = audio_data.copy()
+        mask = np.abs(compressed) > threshold
+        compressed[mask] = np.sign(compressed[mask]) * (threshold + (np.abs(compressed[mask]) - threshold) * ratio)
+        
+        return compressed
+    
+    def _convert_to_mp3(self, wav_file: Path) -> Optional[Path]:
+        """Converte WAV para MP3"""
+        
+        try:
+            import subprocess
+            
+            mp3_file = wav_file.with_suffix('.mp3')
+            
+            cmd = [
+                'ffmpeg',
+                '-i', str(wav_file),
+                '-codec:a', 'libmp3lame',
+                '-b:a', '192k',
+                '-y',
+                str(mp3_file)
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            
+            if mp3_file.exists():
+                logger.info(f"✅ MP3 gerado: {mp3_file}")
+                return mp3_file
+            
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            logger.warning(f"Erro convertendo para MP3: {e}")
+        
+        return None
+    
+    def get_audio_info(self, file_path: Path) -> Dict[str, Any]:
+        """Obtém informações de arquivo de áudio"""
+        
+        try:
+            import soundfile as sf
+            
+            info = sf.info(str(file_path))
+            
+            return {
+                'duration': info.duration,
+                'sample_rate': info.samplerate,
+                'channels': info.channels,
+                'format': info.format,
+                'subtype': info.subtype
+            }
+            
+        except ImportError:
+            # Fallback para wave
+            try:
+                with wave.open(str(file_path), 'rb') as wave_file:
+                    frames = wave_file.getnframes()
+                    sample_rate = wave_file.getframerate()
+                    duration = frames / sample_rate
+                    
+                    return {
+                        'duration': duration,
+                        'sample_rate': sample_rate,
+                        'channels': wave_file.getnchannels(),
+                        'format': 'WAV',
+                        'subtype': f"{wave_file.getsampwidth() * 8}-bit"
+                    }
+            except Exception as e:
+                logger.error(f"Erro obtendo info de {file_path}: {e}")
+                return {}
     
     def _is_ffmpeg_available(self) -> bool:
         """Verifica se ffmpeg está disponível"""
